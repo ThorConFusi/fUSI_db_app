@@ -86,18 +86,20 @@ class MouseService:
 
     def get_alive_mice_with_none(self) -> list[str]:
         """
-        Returns a list of alive mice IDs plus 'none available'.
+        Returns a list of alive mice IDs or 'none available'.
         Ensures dropdowns never break due to empty lists.
         """
         mice = self.mouse_repo.get_alive_mice_ids()
+        return mice if mice else ["none available"]
 
-        if not mice:
-            return ["none available"]
-
-        return mice + ["none available"]
 
     def get_alive_mice(self):
-        return self.mouse_repo.get_alive_mice_ids()
+        """
+        Returns a list of alive mice IDs and 'all'.
+        Ensures dropdowns never break due to empty lists.
+        """
+        mice = self.mouse_repo.get_alive_mice_ids()
+        return ["all"] + mice if mice else ["all"]
 
 
     def get_mouse_export_data(self, pyrat_id):

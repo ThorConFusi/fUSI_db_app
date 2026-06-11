@@ -18,7 +18,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         ctk.CTkLabel(self, text="Mouse:").grid(row=0, column=0, padx=10, pady=10)
         self.mouse_combo = ctk.CTkComboBox(
             self,
-            values=["all"] + self.mouse_service.get_alive_mice(),
+            values=self.mouse_service.get_alive_mice(),
             command=self._on_filter_change
         )
         self.mouse_combo.set("all")

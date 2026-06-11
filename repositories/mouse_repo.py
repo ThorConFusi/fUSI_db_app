@@ -29,12 +29,17 @@ class MouseRepository:
         row = cur.fetchone()
         return dict(row) if row else None
 
-
     def get_alive_mice_ids(self):
-        cur = self.db.safe_query("""
+        sql = """
             SELECT [Pyrat-ID]
             FROM Mouse_data
-            WHERE [D.o.Death] IS NULL
-        """)
+            WHERE TRIM(IFNULL([D.o.Death], '')) = ''
+        """
+
+        cur = self.db.safe_query(sql)
+        if cur is False:
+            print("DB ERROR in get_alive_mice_ids")
+            return []
+
         rows = cur.fetchall()
         return [r[0] for r in rows]

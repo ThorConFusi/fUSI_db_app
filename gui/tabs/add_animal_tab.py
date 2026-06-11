@@ -10,6 +10,7 @@ class AddAnimalTab(ctk.CTkFrame):
         self.today_and_before = today_and_before
         self._build_ui()
 
+
     def _build_ui(self):
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
         self.pyrat_entry = ctk.CTkEntry(self, fg_color="lightyellow", placeholder_text="AAA-xxxx")
@@ -74,21 +75,29 @@ class AddAnimalTab(ctk.CTkFrame):
 
         self.update_rspace_state()
 
+
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
             self.rspace_check.configure(state="normal")
         else:
             self.rspace_check.configure(state="disabled")
 
+
+    def _normalize(self, value):
+        if value is None:
+            return None
+        value = value.strip()
+        return value if value != "" else None
+
     def _on_submit(self):
-        pyrat_id = self.pyrat_entry.get()
-        dob = self.dob_entry.get()
-        sex = self.sex_combo.get()
-        line = self.line_combo.get()
-        dos = self.dos_combo.get()
-        tos = self.tos_entry.get()
-        surgeon = self.surgeon_combo.get()
-        license_ = self.license_combo.get()
+        pyrat_id = self._normalize(self.pyrat_entry.get())
+        dob = self._normalize(self.dob_entry.get())
+        sex = self._normalize(self.sex_combo.get())
+        line = self._normalize(self.line_combo.get())
+        dos = self._normalize(self.dos_combo.get())
+        tos = self._normalize(self.tos_entry.get())
+        surgeon = self._normalize(self.surgeon_combo.get())
+        license_ = self._normalize(self.license_combo.get())
 
         ok, msg = self.mouse_service.register_mouse(
             pyrat_id, dob, sex, line, dos, tos, surgeon, license_
@@ -115,6 +124,7 @@ class AddAnimalTab(ctk.CTkFrame):
                 return
 
             self.info_text.insert("end", f"\nExported to RSpace as #{pyrat_id.replace('-', '')}")
+
 
     def _show_error(self, msg: str):
         err_window = ctk.CTkToplevel(self)
