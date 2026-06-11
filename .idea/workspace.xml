@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/fUSI_db_app.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/database/db.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/tabs/add_session_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/tabs/display_sessions_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/tabs/welcome_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/login_repo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/mouse_repo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/session_repo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/mouse_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/rspace_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/session_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/validators.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="3EzK0q8p9zeIgiyu4BOJFkNibyB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.add_animal_tab.executor": "Run",
+    "Python.add_session_tab.executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.db.executor": "Run",
+    "Python.display_sessions_tab.executor": "Run",
+    "Python.kill_animal_tab.executor": "Run",
+    "Python.login_repo.executor": "Run",
+    "Python.main_window.executor": "Run",
+    "Python.mouse_repo.executor": "Run",
+    "Python.mouse_service.executor": "Run",
+    "Python.params.executor": "Run",
+    "Python.rspace_service.executor": "Run",
+    "Python.session_repo.executor": "Run",
+    "Python.session_service.executor": "Run",
+    "Python.validators.executor": "Run",
+    "Python.welcome_tab.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\thora\Documents\Repositories\fUSI_db_app" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-2653e85de345-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.31033.139" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="" />
+      <created>1781175737313</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1781175737313</updated>
+    </task>
+    <servers />
+  </component>
+</project>

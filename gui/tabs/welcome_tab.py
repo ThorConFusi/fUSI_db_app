@@ -1,0 +1,95 @@
+import customtkinter as ctk
+
+
+class WelcomeTab(ctk.CTkFrame):
+    def __init__(self, master, rspace_service, db, main_window):
+        super().__init__(master)
+        self.rspace_service = rspace_service
+        self.db = db
+        self.main_window = main_window
+        self._build_ui()
+
+    def _build_ui(self):
+        # Title
+        ctk.CTkLabel(
+            self,
+            text="RSpace Login",
+            font=ctk.CTkFont(size=16)
+        ).grid(row=0, column=0, columnspan=2)
+
+        # Surgeon dropdown
+        ctk.CTkLabel(self, text="Surgeon:", anchor="e", width=100).grid(row=1, column=0)
+        self.login_option = ctk.CTkOptionMenu(
+            self,
+            values=self._load_surgeons()
+        )
+        self.login_option.grid(row=1, column=1, padx=10)
+
+        # Password entry
+        ctk.CTkLabel(self, text="Password:", anchor="e", width=100).grid(row=2, column=0)
+        self.pw_entry = ctk.CTkEntry(self, show="*")
+        self.pw_entry.grid(row=2, column=1, padx=10, pady=3)
+
+        # Login button
+        self.login_button = ctk.CTkButton(
+            self,
+            text="Login",
+            command=self._on_login
+        )
+        self.login_button.grid(row=3, column=0, columnspan=2)
+
+        # Status label
+        self.rspace_label = ctk.CTkLabel(
+            self,
+            text="Not connected to RSpace",
+            fg_color="lightyellow",
+            corner_radius=5,
+            width=300,
+            height=90,
+            anchor="center"
+        )
+        self.rspace_label.grid(row=1, column=2, rowspan=3, columnspan=2)
+
+
+    # Load surgeons from DB
+    def _load_surgeons(self):
+        try:
+            cur = self.db.safe_query("SELECT Surgeon FROM Login_data")
+            rows = cur.fetchall()
+            return [row["Surgeon"] for row in rows] if rows else ["none available"]
+        except Exception:
+            return ["none available"]
+
+
+    # Login handler
+    def _on_login(self):
+        surgeon = self.login_option.get()
+        pw = self.pw_entry.get()
+
+        ok, msg = self.rspace_service.check_login(surgeon, pw)
+
+        if ok:
+            self.rspace_label.configure(
+                text=f"Password correct!\n{self.rspace_service.get_current_surgeon()} connected.",
+                fg_color="lightgreen"
+            )
+            # Activate checkbox in AddAnimalTab
+            self.main_window.add_animal_tab.update_rspace_state()
+            self.main_window.add_session_tab.update_rspace_state()
+            self.main_window.kill_tab.update_rspace_state()
+            return
+
+        if not ok:
+            self.rspace_label.configure(
+                text=f"Login failed:\n{msg}",
+                fg_color="lightyellow"
+            )
+            return
+
+        # Success
+        self.rspace_label.configure(
+            text=f"Password correct!\n"
+                 f"{self.rspace_service.get_current_surgeon()} is now\n"
+                 f"connected to RSpace",
+            fg_color="lightgreen"
+        )
