@@ -1,8 +1,9 @@
 import customtkinter as ctk
 import params
+from gui.base_tab import BaseTab
 
 
-class AddAnimalTab(ctk.CTkFrame):
+class AddAnimalTab(BaseTab):
     def __init__(self, master, mouse_service, rspace_service, today_and_before):
         super().__init__(master)
         self.mouse_service = mouse_service
@@ -119,44 +120,12 @@ class AddAnimalTab(ctk.CTkFrame):
         self.info_label.configure(text=msg)
 
         if not ok:
-            self._show_error(msg)
+            self.show_error(msg)
             return
 
         # Success → empty fields
         self._clear_fields()
 
-
-    def _show_error(self, msg: str):
-        err_window = ctk.CTkToplevel(self)
-        err_window.title("Input error")
-        err_window.geometry("300x150")
-
-        # Always top level
-        err_window.lift()
-        err_window.attributes("-topmost", True)
-        err_window.after(10, lambda: err_window.attributes("-topmost", False))
-
-        # Set focus
-        err_window.focus_force()
-
-        # Make modal (blocks main window)
-        err_window.grab_set()
-
-        label = ctk.CTkLabel(
-            err_window,
-            text=msg,
-            font=ctk.CTkFont(size=16),
-            text_color="red"
-        )
-        label.pack(pady=30)
-
-        btn = ctk.CTkButton(
-            err_window,
-            text="OK",
-            font=ctk.CTkFont(size=16),
-            command=err_window.destroy
-        )
-        btn.pack()
 
     def _clear_fields(self):
         self.pyrat_entry.delete(0, "end")

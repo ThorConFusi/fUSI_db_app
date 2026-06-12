@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Fixed bugs with uploading to DB and Pyrat-ID format">
+    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Optimized error messaging and field clearing after submission">
+      <change afterPath="$PROJECT_DIR$/gui/base_tab.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/dialogs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" afterDir="false" />
     </list>
@@ -34,8 +36,11 @@
     "Python.add_animal_tab.executor": "Run",
     "Python.add_session_tab.executor": "Run",
     "Python.app.executor": "Run",
+    "Python.base_tab.executor": "Run",
     "Python.db.executor": "Run",
+    "Python.dialogs.executor": "Run",
     "Python.display_sessions_tab.executor": "Run",
+    "Python.error_popup.executor": "Run",
     "Python.kill_animal_tab.executor": "Run",
     "Python.login_repo.executor": "Run",
     "Python.main_window.executor": "Run",
@@ -57,6 +62,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\thora\Documents\Repositories\fUSI_db_app\gui" />
+      <recent name="C:\Users\thora\Documents\Repositories\fUSI_db_app\gui\tabs" />
       <recent name="C:\Users\thora\Documents\Repositories\fUSI_db_app" />
     </key>
   </component>
@@ -99,7 +106,15 @@
       <option name="project" value="LOCAL" />
       <updated>1781276886248</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Optimized error messaging and field clearing after submission">
+      <option name="closed" value="true" />
+      <created>1781279863336</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1781279863336</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -117,6 +132,7 @@
     <MESSAGE value="First running modular version" />
     <MESSAGE value="Fixed bug for retrieving alive mice rom DB" />
     <MESSAGE value="Fixed bugs with uploading to DB and Pyrat-ID format" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bugs with uploading to DB and Pyrat-ID format" />
+    <MESSAGE value="Optimized error messaging and field clearing after submission" />
+    <option name="LAST_COMMIT_MESSAGE" value="Optimized error messaging and field clearing after submission" />
   </component>
 </project>

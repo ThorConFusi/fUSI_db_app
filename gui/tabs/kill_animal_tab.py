@@ -1,10 +1,9 @@
-
-
 import customtkinter as ctk
 import params
+from gui.base_tab import BaseTab
 
 
-class KillAnimalTab(ctk.CTkFrame):
+class KillAnimalTab(BaseTab):
     def __init__(self, master, mouse_service, rspace_service, today_and_before):
         super().__init__(master)
         self.mouse_service = mouse_service
@@ -140,32 +139,12 @@ class KillAnimalTab(ctk.CTkFrame):
 
         if not ok:
             self.info_label.configure(text=msg)
-            self._show_error(msg)
+            self.show_error(msg)
             return
 
         # Success
         self.status_label.configure(text=f"{pyrat_id}\nmarked as dead.")
 
-
-    # Error popup
-    def _show_error(self, msg: str):
-        err_window = ctk.CTkToplevel(self)
-        err_window.title("Input error")
-        err_window.geometry("300x150")
-
-        label = ctk.CTkLabel(
-            err_window,
-            text=msg,
-            font=ctk.CTkFont(size=16),
-            text_color="red"
-        )
-        label.pack(pady=30)
-
-        def close():
-            err_window.destroy()
-
-        btn = ctk.CTkButton(err_window, text="OK", font=ctk.CTkFont(size=16), command=close)
-        btn.pack()
 
     def _clear_fields(self):
         self.kill_date_combo.set("")
