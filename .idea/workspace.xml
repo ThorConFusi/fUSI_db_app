@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="First running modular version">
-      <change beforePath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui/tabs/display_sessions_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/display_sessions_tab.py" afterDir="false" />
+    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Fixed bug for retrieving alive mice rom DB">
+      <change beforePath="$PROJECT_DIR$/gui/main_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repositories/mouse_repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/mouse_repo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/mouse_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/mouse_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/validators.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/validators.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,11 +86,31 @@
       <option name="project" value="LOCAL" />
       <updated>1781178364352</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Fixed bug for retrieving alive mice rom DB">
+      <option name="closed" value="true" />
+      <created>1781189236897</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1781189236897</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="First running modular version" />
-    <option name="LAST_COMMIT_MESSAGE" value="First running modular version" />
+    <MESSAGE value="Fixed bug for retrieving alive mice rom DB" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug for retrieving alive mice rom DB" />
   </component>
 </project>

@@ -22,7 +22,7 @@ class MainWindow(ctk.CTk):
         ctk.set_default_color_theme("dark-blue")
 
         self.title("fUSI Experiment Information")
-        self.geometry("900x600")
+        self.geometry("800x280")
 
         title_label = ctk.CTkLabel(
             self,

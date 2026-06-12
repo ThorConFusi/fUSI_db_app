@@ -1,3 +1,5 @@
+
+
 import customtkinter as ctk
 import params
 
@@ -86,6 +88,19 @@ class KillAnimalTab(ctk.CTkFrame):
 
         self.update_rspace_state()
 
+        # Info box (read-only)
+        self.info_label = ctk.CTkLabel(
+            self,
+            text="",
+            height=40,
+            fg_color="lightgrey",
+            corner_radius=5,
+            anchor="w",
+            text_color="black"
+        )
+        self.info_label.grid(row=4, column=0, columnspan=5, sticky="we", padx=10, pady=(10, 0))
+
+
     # Update login state
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
@@ -93,11 +108,22 @@ class KillAnimalTab(ctk.CTkFrame):
         else:
             self.rspace_check.configure(state="disabled")
 
+
+    # Update Pyrat-ID pulldown
+    def refresh_pyrat_ids(self):
+        alive_ids = self.mouse_service.get_alive_mice_with_none()
+        self.pyrat_option.configure(values=alive_ids)
+
+        # Optional: Auswahl zurücksetzen
+        if alive_ids:
+            self.pyrat_option.set(alive_ids[0])
+
+
     # Submit kill event
     def _on_submit(self):
         pyrat_id = self.pyrat_option.get()
         dod = self.kill_date_combo.get()
-        tod = self.kill_time_combo.get()
+        tod = self.kill_time_entry.get()
         method = self.method_combo.get()
         purpose = self.purpose_combo.get()
         comment = self.comment_entry.get()
@@ -106,12 +132,20 @@ class KillAnimalTab(ctk.CTkFrame):
             pyrat_id, dod, tod, method, purpose, comment
         )
 
+        self.info_label.configure(text=msg)
+
+        if ok:
+            self._clear_fields()
+            self.refresh_pyrat_ids()
+
         if not ok:
+            self.info_label.configure(text=msg)
             self._show_error(msg)
             return
 
         # Success
         self.status_label.configure(text=f"{pyrat_id}\nmarked as dead.")
+
 
     # Error popup
     def _show_error(self, msg: str):
@@ -132,3 +166,11 @@ class KillAnimalTab(ctk.CTkFrame):
 
         btn = ctk.CTkButton(err_window, text="OK", font=ctk.CTkFont(size=16), command=close)
         btn.pack()
+
+    def _clear_fields(self):
+        self.kill_date_combo.set("")
+        self.kill_time_entry.delete(0, "end")
+        self.kill_time_entry.configure(self, placeholder_text="hh:mm")
+        #self.method_combo.set("")
+        #self.purpose_combo.set("")
+        self.comment_entry.delete(0, "end")

@@ -1,22 +1,46 @@
 import re
 from datetime import datetime
 
+
 class ValidationError(Exception):
     """Custom validation error for service layer."""
     pass
 
-def validate_pyrat_id(pyrat_id: str):
-    if not pyrat_id:
+
+# Normalisierung
+def _normalize_pyrat_id(pid: str | None) -> str | None:
+    if pid is None:
+        return None
+
+    # Remove spaces
+    pid = pid.strip()
+    if pid == "":
+        return None
+
+    # Unicode-Dashes to ASCII-Minus
+    pid = pid.replace("–", "-").replace("—", "-")
+
+    # All caps
+    pid = pid.upper()
+
+    return pid
+
+
+# Pyrat-ID
+def validate_pyrat_id(pyrat_id: str) -> str:
+    pid = _normalize_pyrat_id(pyrat_id)
+
+    if not pid:
         raise ValidationError("Pyrat ID cannot be empty")
 
-    if not re.match(r"^[A-Za-z]{3}-\d{4}$", pyrat_id):
-        raise ValidationError("Pyrat ID must follow the format AAA-xxxx")
+    if not re.match(r"^[A-Z]{3}-[A-Z0-9]{4}$", pid):
+        raise ValidationError("Pyrat ID must follow the format AAA-XXXX")
+
+    return pid
 
 
-def validate_date(value: str, field_name: str):
-    """
-    Validates a date string in YYYY-MM-DD format.
-    """
+# Datum
+def validate_date(value: str, field_name: str) -> str:
     if not value:
         raise ValidationError(f"{field_name} cannot be empty")
 
@@ -25,26 +49,24 @@ def validate_date(value: str, field_name: str):
     except ValueError:
         raise ValidationError(f"{field_name} must be in format YYYY-MM-DD")
 
-    return True
+    return value
 
 
-def validate_time(value: str, field_name: str):
-    """
-    Validates a time string in hh:mm format (24h).
-    Accepts 00:00 to 23:59.
-    """
+# Uhrzeit
+def validate_time(value: str, field_name: str) -> str:
     if not value:
         raise ValidationError(f"{field_name} cannot be empty")
 
-    # Regex for 24h time format
     pattern = r"^(?:[01]\d|2[0-3]):[0-5]\d$"
-
     if not re.match(pattern, value):
         raise ValidationError(f"{field_name} must be in hh:mm format (00:00–23:59)")
 
-    return True
+    return value
 
 
-def validate_dropdown(value: str, field_name: str):
+# Dropdowns
+def validate_dropdown(value: str, field_name: str) -> str:
     if not value or value == "none available":
         raise ValidationError(f"Please select a valid {field_name}")
+
+    return value
