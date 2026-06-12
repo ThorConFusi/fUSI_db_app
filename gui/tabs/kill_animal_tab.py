@@ -174,3 +174,4 @@ class KillAnimalTab(ctk.CTkFrame):
         #self.method_combo.set("")
         #self.purpose_combo.set("")
         self.comment_entry.delete(0, "end")
+        self.comment_entry.configure(placeholder_text = "e. g. lost headmount or for histology")

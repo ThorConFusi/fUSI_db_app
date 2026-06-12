@@ -75,6 +75,17 @@ class AddAnimalTab(ctk.CTkFrame):
 
         self.update_rspace_state()
 
+        self.info_label = ctk.CTkLabel(
+            self,
+            text="",
+            height=40,
+            fg_color="lightgrey",
+            corner_radius=5,
+            anchor="w",
+            text_color="black"
+        )
+        self.info_label.grid(row=4, column=0, columnspan=5, sticky="we", padx=10, pady=(10, 0))
+
 
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
@@ -89,55 +100,72 @@ class AddAnimalTab(ctk.CTkFrame):
         value = value.strip()
         return value if value != "" else None
 
+
     def _on_submit(self):
-        pyrat_id = self._normalize(self.pyrat_entry.get())
-        dob = self._normalize(self.dob_entry.get())
-        sex = self._normalize(self.sex_combo.get())
-        line = self._normalize(self.line_combo.get())
-        dos = self._normalize(self.dos_combo.get())
-        tos = self._normalize(self.tos_entry.get())
-        surgeon = self._normalize(self.surgeon_combo.get())
-        license_ = self._normalize(self.license_combo.get())
+        pyrat_id = self.pyrat_entry.get()
+        dob = self.dob_entry.get()
+        sex = self.sex_combo.get()
+        line = self.line_combo.get()
+        dos = self.dos_combo.get()
+        tos = self.tos_entry.get()
+        surgeon = self.surgeon_combo.get()
+        license_ = self.license_combo.get()
 
         ok, msg = self.mouse_service.register_mouse(
             pyrat_id, dob, sex, line, dos, tos, surgeon, license_
         )
 
+        # Update Info-Box
+        self.info_label.configure(text=msg)
+
         if not ok:
             self._show_error(msg)
             return
 
-        self.pyrat_entry.delete(0, "end")
-        self.info_text.delete("0.0", "end")
-        self.info_text.insert("0.0", f"{pyrat_id} stored in database.")
-
-        # RSpace Export (optional)
-        if self.rspace_service.logged_in and self.rspace_var.get() == "on":
-            ok, msg = self.mouse_service.export_mouse(
-                pyrat_id=pyrat_id,
-                comment="Created at registration",
-                rspace_service=self.rspace_service
-            )
-
-            if not ok:
-                self._show_error(f"RSpace export failed:\n{msg}")
-                return
-
-            self.info_text.insert("end", f"\nExported to RSpace as #{pyrat_id.replace('-', '')}")
+        # Success → empty fields
+        self._clear_fields()
 
 
     def _show_error(self, msg: str):
         err_window = ctk.CTkToplevel(self)
-        err_window.title("Database conflict")
+        err_window.title("Input error")
         err_window.geometry("300x150")
 
-        label = ctk.CTkLabel(err_window, text=msg,
-                             font=ctk.CTkFont(size=16),
-                             text_color="red")
+        # Always top level
+        err_window.lift()
+        err_window.attributes("-topmost", True)
+        err_window.after(10, lambda: err_window.attributes("-topmost", False))
+
+        # Set focus
+        err_window.focus_force()
+
+        # Make modal (blocks main window)
+        err_window.grab_set()
+
+        label = ctk.CTkLabel(
+            err_window,
+            text=msg,
+            font=ctk.CTkFont(size=16),
+            text_color="red"
+        )
         label.pack(pady=30)
 
-        def close():
-            err_window.destroy()
-
-        btn = ctk.CTkButton(err_window, text="OK", font=ctk.CTkFont(size=16), command=close)
+        btn = ctk.CTkButton(
+            err_window,
+            text="OK",
+            font=ctk.CTkFont(size=16),
+            command=err_window.destroy
+        )
         btn.pack()
+
+    def _clear_fields(self):
+        self.pyrat_entry.delete(0, "end")
+        self.dob_entry.delete(0, "end")
+        self.dob_entry.configure(self, placeholder_text="YYYY-MM-DD")
+        #self.sex_combo.set("")
+        #self.line_combo.set("")
+        #self.dos_combo.set("")
+        self.tos_entry.delete(0, "end")
+        self.tos_entry.configure(self, placeholder_text="hh:mm")
+        #self.surgeon_combo.set("")
+        #self.license_combo.set("")
