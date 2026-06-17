@@ -11,40 +11,51 @@ class AddAnimalTab(BaseTab):
         self.today_and_before = today_and_before
         self._build_ui()
 
-
+    # ---------------------------------------------------------
+    # UI
+    # ---------------------------------------------------------
     def _build_ui(self):
+        # Pyrat ID
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
         self.pyrat_entry = ctk.CTkEntry(self, fg_color="lightyellow", placeholder_text="AAA-xxxx")
         self.pyrat_entry.grid(row=0, column=1, padx=(10, 40))
 
+        # Day of Birth
         ctk.CTkLabel(self, text="Day of Birth:", anchor="e", width=100).grid(row=1, column=0)
         self.dob_entry = ctk.CTkEntry(self, placeholder_text="YYYY-MM-DD")
         self.dob_entry.grid(row=1, column=1, padx=(10, 40), pady=2)
 
+        # Sex
         ctk.CTkLabel(self, text="Sex:", anchor="e", width=100).grid(row=2, column=0)
         self.sex_combo = ctk.CTkComboBox(self, values=params.mouse_sex)
         self.sex_combo.grid(row=2, column=1, padx=(10, 40))
 
+        # Line
         ctk.CTkLabel(self, text="Line/Genotype:", anchor="e", width=100).grid(row=3, column=0)
         self.line_combo = ctk.CTkComboBox(self, values=params.mouse_line)
         self.line_combo.grid(row=3, column=1, padx=(10, 40), pady=2)
 
+        # Day of Surgery
         ctk.CTkLabel(self, text="Day of Surgery:", anchor="e", width=100).grid(row=0, column=2)
         self.dos_combo = ctk.CTkComboBox(self, values=self.today_and_before)
         self.dos_combo.grid(row=0, column=3, padx=(10, 40))
 
+        # Time of Surgery
         ctk.CTkLabel(self, text="Time of Surgery:", anchor="e", width=100).grid(row=1, column=2)
         self.tos_entry = ctk.CTkEntry(self, placeholder_text="hh:mm")
         self.tos_entry.grid(row=1, column=3, padx=(10, 40), pady=2)
 
+        # Surgeon
         ctk.CTkLabel(self, text="Surgeon:", anchor="e", width=100).grid(row=2, column=2)
         self.surgeon_combo = ctk.CTkComboBox(self, values=params.mouse_surgeon)
         self.surgeon_combo.grid(row=2, column=3, padx=(10, 40))
 
+        # License
         ctk.CTkLabel(self, text="License:", anchor="e", width=100).grid(row=3, column=2)
         self.license_combo = ctk.CTkComboBox(self, values=params.mouse_license)
         self.license_combo.grid(row=3, column=3, padx=(10, 40))
 
+        # Info text box
         self.info_text = ctk.CTkTextbox(
             self,
             height=50,
@@ -56,6 +67,7 @@ class AddAnimalTab(BaseTab):
         self.info_text.insert("0.0", "Check cage card to match information!")
         self.info_text.grid(row=0, column=4, rowspan=2, padx=20)
 
+        # Submit button
         self.submit_button = ctk.CTkButton(
             self,
             text="Submit mouse",
@@ -63,6 +75,7 @@ class AddAnimalTab(BaseTab):
         )
         self.submit_button.grid(row=3, column=4, padx=20)
 
+        # RSpace checkbox
         self.rspace_var = ctk.StringVar(value="off")
         self.rspace_check = ctk.CTkCheckBox(
             self,
@@ -76,6 +89,7 @@ class AddAnimalTab(BaseTab):
 
         self.update_rspace_state()
 
+        # Info label (BaseTab uses this)
         self.info_label = ctk.CTkLabel(
             self,
             text="",
@@ -87,21 +101,18 @@ class AddAnimalTab(BaseTab):
         )
         self.info_label.grid(row=4, column=0, columnspan=5, sticky="we", padx=10, pady=(10, 0))
 
-
+    # ---------------------------------------------------------
+    # RSpace login state
+    # ---------------------------------------------------------
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
             self.rspace_check.configure(state="normal")
         else:
             self.rspace_check.configure(state="disabled")
 
-
-    def _normalize(self, value):
-        if value is None:
-            return None
-        value = value.strip()
-        return value if value != "" else None
-
-
+    # ---------------------------------------------------------
+    # Submit new mouse
+    # ---------------------------------------------------------
     def _on_submit(self):
         pyrat_id = self.pyrat_entry.get()
         dob = self.dob_entry.get()
@@ -116,25 +127,24 @@ class AddAnimalTab(BaseTab):
             pyrat_id, dob, sex, line, dos, tos, surgeon, license_
         )
 
-        # Update Info-Box
-        self.info_label.configure(text=msg)
-
         if not ok:
             self.show_error(msg)
             return
 
-        # Success → empty fields
+        # Success
+        self.show_success(msg)
         self._clear_fields()
 
-
+    # ---------------------------------------------------------
+    # Clear fields
+    # ---------------------------------------------------------
     def _clear_fields(self):
         self.pyrat_entry.delete(0, "end")
+
         self.dob_entry.delete(0, "end")
-        self.dob_entry.configure(self, placeholder_text="YYYY-MM-DD")
-        #self.sex_combo.set("")
-        #self.line_combo.set("")
-        #self.dos_combo.set("")
+        self.dob_entry.configure(placeholder_text="YYYY-MM-DD")
+
         self.tos_entry.delete(0, "end")
-        self.tos_entry.configure(self, placeholder_text="hh:mm")
-        #self.surgeon_combo.set("")
-        #self.license_combo.set("")
+        self.tos_entry.configure(placeholder_text="hh:mm")
+
+        self.comment_entry = None  # no comment field here

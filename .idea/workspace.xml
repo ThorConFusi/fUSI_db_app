@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Optimized error messaging and field clearing after submission">
-      <change afterPath="$PROJECT_DIR$/gui/base_tab.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/dialogs.py" afterDir="false" />
+    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Common dialog windows (error and success)">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/base_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/base_tab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/dialogs.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/dialogs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/main_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/add_animal_tab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/tabs/add_session_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/add_session_tab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/tabs/display_sessions_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/display_sessions_tab.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/kill_animal_tab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/tabs/welcome_tab.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/tabs/welcome_tab.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/session_repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/session_repo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/mouse_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/mouse_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,44 +29,44 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="3EzK0q8p9zeIgiyu4BOJFkNibyB" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.add_animal_tab.executor": "Run",
-    "Python.add_session_tab.executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.base_tab.executor": "Run",
-    "Python.db.executor": "Run",
-    "Python.dialogs.executor": "Run",
-    "Python.display_sessions_tab.executor": "Run",
-    "Python.error_popup.executor": "Run",
-    "Python.kill_animal_tab.executor": "Run",
-    "Python.login_repo.executor": "Run",
-    "Python.main_window.executor": "Run",
-    "Python.mouse_repo.executor": "Run",
-    "Python.mouse_service.executor": "Run",
-    "Python.params.executor": "Run",
-    "Python.rspace_service.executor": "Run",
-    "Python.session_repo.executor": "Run",
-    "Python.session_service.executor": "Run",
-    "Python.tryout.executor": "Run",
-    "Python.validators.executor": "Run",
-    "Python.welcome_tab.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.add_animal_tab.executor&quot;: &quot;Run&quot;,
+    &quot;Python.add_session_tab.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_tab.executor&quot;: &quot;Run&quot;,
+    &quot;Python.db.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dialogs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.display_sessions_tab.executor&quot;: &quot;Run&quot;,
+    &quot;Python.error_popup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.kill_animal_tab.executor&quot;: &quot;Run&quot;,
+    &quot;Python.login_repo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_window.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mouse_repo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mouse_service.executor&quot;: &quot;Run&quot;,
+    &quot;Python.params.executor&quot;: &quot;Run&quot;,
+    &quot;Python.rspace_service.executor&quot;: &quot;Run&quot;,
+    &quot;Python.session_repo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.session_service.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tryout.executor&quot;: &quot;Run&quot;,
+    &quot;Python.validators.executor&quot;: &quot;Run&quot;,
+    &quot;Python.welcome_tab.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\thora\Documents\Repositories\fUSI_db_app\gui" />
@@ -114,7 +121,15 @@
       <option name="project" value="LOCAL" />
       <updated>1781279863336</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Common dialog windows (error and success)">
+      <option name="closed" value="true" />
+      <created>1781283339440</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1781283339440</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -133,6 +148,7 @@
     <MESSAGE value="Fixed bug for retrieving alive mice rom DB" />
     <MESSAGE value="Fixed bugs with uploading to DB and Pyrat-ID format" />
     <MESSAGE value="Optimized error messaging and field clearing after submission" />
-    <option name="LAST_COMMIT_MESSAGE" value="Optimized error messaging and field clearing after submission" />
+    <MESSAGE value="Common dialog windows (error and success)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Common dialog windows (error and success)" />
   </component>
 </project>

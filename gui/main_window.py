@@ -44,6 +44,13 @@ class MainWindow(ctk.CTk):
 
         self._build_tabs()
 
+        # Polling for tab changes (CTk-compatible)
+        self._last_active_tab = None
+        self.after(200, self._poll_active_tab)
+
+    # ---------------------------------------------------------
+    # Build all tabs
+    # ---------------------------------------------------------
     def _build_tabs(self):
         # Welcome / RSpace
         welcome_frame = self.tabview.add(params.tab_title[3])
@@ -84,7 +91,6 @@ class MainWindow(ctk.CTk):
             rspace_service=self.rspace_service,
             today_and_before=self.today_and_before
         )
-
         self.kill_tab.pack(fill="both", expand=True)
 
         # Display Sessions
@@ -95,3 +101,29 @@ class MainWindow(ctk.CTk):
             session_service=self.session_service
         )
         self.display_tab.pack(fill="both", expand=True)
+
+    # ---------------------------------------------------------
+    # Polling-based tab change detection (CTk-compatible)
+    # ---------------------------------------------------------
+    def _poll_active_tab(self):
+        current = self.tabview.get()  # Name of active tab
+
+        if current != self._last_active_tab:
+            self._last_active_tab = current
+
+            # --- Add Session Tab ---
+            if current == params.tab_title[1]:
+                self.add_session_tab.refresh_pyrat_ids()
+                self.add_session_tab._update_session_label()
+
+            # --- Kill Animal Tab ---
+            if current == params.tab_title[2]:
+                self.kill_tab.refresh_pyrat_ids()
+
+            # --- Welcome Tab (optional refresh) ---
+            if current == params.tab_title[3]:
+                if hasattr(self.welcome_tab, "refresh"):
+                    self.welcome_tab.refresh()
+
+        # Continue polling
+        self.after(200, self._poll_active_tab)

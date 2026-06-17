@@ -15,7 +15,7 @@ class WelcomeTab(ctk.CTkFrame):
             self,
             text="RSpace Login",
             font=ctk.CTkFont(size=16)
-        ).grid(row=0, column=0, columnspan=2)
+        ).grid(row=0, column=1)
 
         # Surgeon dropdown
         ctk.CTkLabel(self, text="Surgeon:", anchor="e", width=100).grid(row=1, column=0)
@@ -36,7 +36,7 @@ class WelcomeTab(ctk.CTkFrame):
             text="Login",
             command=self._on_login
         )
-        self.login_button.grid(row=3, column=0, columnspan=2)
+        self.login_button.grid(row=3, column=1)
 
         # Status label
         self.rspace_label = ctk.CTkLabel(

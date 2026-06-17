@@ -14,7 +14,7 @@ class MouseService:
 
     def register_mouse(self, pyrat_id, dob, sex, line, dos, tos, surgeon, license_):
         try:
-            # Validierung + Normalisierung
+            # Validation + Normalization
             pyrat_id = validate_pyrat_id(pyrat_id)
             dob      = validate_date(dob, "Date of Birth")
             sex      = validate_dropdown(sex, "Sex")
@@ -52,7 +52,7 @@ class MouseService:
             tod      = validate_time(tod, "Time of Death")
             method   = validate_dropdown(method, "Kill Method")
             purpose  = validate_dropdown(purpose, "Kill Purpose")
-            # comment darf leer sein → keine Validierung
+            # comment may be empty → no validation
 
             ok = self.mouse_repo.kill_mouse(
                 pyrat_id, dod, tod, method, purpose, comment

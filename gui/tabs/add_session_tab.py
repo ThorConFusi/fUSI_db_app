@@ -1,8 +1,9 @@
 import customtkinter as ctk
+from gui.base_tab import BaseTab
 import params
 
 
-class AddSessionTab(ctk.CTkFrame):
+class AddSessionTab(BaseTab):
     def __init__(self, master, mouse_service, session_service, rspace_service, today_and_before):
         super().__init__(master)
         self.mouse_service = mouse_service
@@ -11,6 +12,9 @@ class AddSessionTab(ctk.CTkFrame):
         self.today_and_before = today_and_before
         self._build_ui()
 
+    # ---------------------------------------------------------
+    # UI
+    # ---------------------------------------------------------
     def _build_ui(self):
         # Pyrat ID
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
@@ -65,7 +69,7 @@ class AddSessionTab(ctk.CTkFrame):
         )
         self.submit_button.grid(row=3, column=4, padx=20)
 
-        # RSpace checkbox (disabled until login)
+        # RSpace checkbox
         self.rspace_var = ctk.StringVar(value="off")
         self.rspace_check = ctk.CTkCheckBox(
             self,
@@ -86,16 +90,32 @@ class AddSessionTab(ctk.CTkFrame):
         )
         self.comment_entry.grid(row=3, column=1, columnspan=3, padx=(10, 40), pady=2)
 
+        # Info label (BaseTab uses this)
+        self.info_label = ctk.CTkLabel(
+            self,
+            text="",
+            height=40,
+            fg_color="lightgrey",
+            corner_radius=5,
+            anchor="w",
+            text_color="black"
+        )
+        self.info_label.grid(row=4, column=0, columnspan=5, sticky="we", padx=10, pady=(10, 0))
+
         self.update_rspace_state()
 
-    # Update login state
+    # ---------------------------------------------------------
+    # RSpace login state
+    # ---------------------------------------------------------
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
             self.rspace_check.configure(state="normal")
         else:
             self.rspace_check.configure(state="disabled")
 
+    # ---------------------------------------------------------
     # Update session number
+    # ---------------------------------------------------------
     def _update_session_label(self, _choice=None):
         pyrat_id = self.pyrat_option.get()
 
@@ -105,13 +125,15 @@ class AddSessionTab(ctk.CTkFrame):
 
         ok, result = self.session_service.get_next_session_number_safe(pyrat_id)
         if not ok:
-            self._show_error(result)
+            self.show_error(result)
             return
 
         next_num = result
         self.rec_label.configure(text=f"fUS recording\nsession no. {next_num}")
 
+    # ---------------------------------------------------------
     # Submit session
+    # ---------------------------------------------------------
     def _on_submit(self):
         pyrat_id = self.pyrat_option.get()
         exp = self.exp_combo.get()
@@ -125,28 +147,40 @@ class AddSessionTab(ctk.CTkFrame):
         )
 
         if not ok:
-            self._show_error(result)
+            self.show_error(result)
             return
 
         next_num = result
         self.rec_label.configure(text=f"fUS recording\nsession no. {next_num}")
 
-    # Error popup
+        self.show_success(f"Session for {pyrat_id} saved successfully.")
+
+        self._clear_fields()
+        self.refresh_pyrat_ids()
+
+    # ---------------------------------------------------------
+    # Clear fields
+    # ---------------------------------------------------------
+    def _clear_fields(self):
+        self.sess_date_combo.set("")
+        self.sess_time_entry.delete(0, "end")
+        self.sess_time_entry.configure(placeholder_text="hh:mm")
+
+        self.comment_entry.delete(0, "end")
+        self.comment_entry.configure(placeholder_text="e. g. quality of cranial window")
+
+    # ---------------------------------------------------------
+    # Refresh Pyrat IDs (called by MainWindow polling)
+    # ---------------------------------------------------------
+    def refresh_pyrat_ids(self):
+        alive_ids = self.mouse_service.get_alive_mice_with_none()
+        self.pyrat_option.configure(values=alive_ids)
+
+        if alive_ids:
+            self.pyrat_option.set(alive_ids[0])
+
+    # ---------------------------------------------------------
+    # Error handler (now via BaseTab)
+    # ---------------------------------------------------------
     def _show_error(self, msg: str):
-        err_window = ctk.CTkToplevel(self)
-        err_window.title("Input error")
-        err_window.geometry("300x150")
-
-        label = ctk.CTkLabel(
-            err_window,
-            text=msg,
-            font=ctk.CTkFont(size=16),
-            text_color="red"
-        )
-        label.pack(pady=30)
-
-        def close():
-            err_window.destroy()
-
-        btn = ctk.CTkButton(err_window, text="OK", font=ctk.CTkFont(size=16), command=close)
-        btn.pack()
+        self.show_error(msg)

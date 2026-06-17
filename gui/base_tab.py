@@ -1,13 +1,16 @@
 import customtkinter as ctk
-from gui.dialogs import ErrorPopup, SuccessPopup
 
 
 class BaseTab(ctk.CTkFrame):
-    """Common basis for all Tabs."""
+    """Common basis for all Tabs with inline status messages."""
+
+    def set_info(self, msg: str, color="black"):
+        """Update the info label if the tab has one."""
+        if hasattr(self, "info_label"):
+            self.info_label.configure(text=msg, text_color=color)
 
     def show_error(self, msg: str):
-        ErrorPopup(self, msg)
-
+        self.set_info(msg, color="red")
 
     def show_success(self, msg: str):
-        SuccessPopup(self, msg)
+        self.set_info(msg, color="green")

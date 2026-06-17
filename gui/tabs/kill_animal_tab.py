@@ -11,6 +11,9 @@ class KillAnimalTab(BaseTab):
         self.today_and_before = today_and_before
         self._build_ui()
 
+    # ---------------------------------------------------------
+    # UI
+    # ---------------------------------------------------------
     def _build_ui(self):
         # Pyrat ID
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
@@ -64,7 +67,7 @@ class KillAnimalTab(BaseTab):
         )
         self.submit_button.grid(row=3, column=4, padx=20)
 
-        # RSpace checkbox (disabled until login)
+        # RSpace checkbox
         self.rspace_var = ctk.StringVar(value="off")
         self.rspace_check = ctk.CTkCheckBox(
             self,
@@ -85,9 +88,7 @@ class KillAnimalTab(BaseTab):
         )
         self.comment_entry.grid(row=3, column=1, columnspan=3, padx=(10, 40), pady=2)
 
-        self.update_rspace_state()
-
-        # Info box (read-only)
+        # Info label (BaseTab uses this)
         self.info_label = ctk.CTkLabel(
             self,
             text="",
@@ -99,26 +100,30 @@ class KillAnimalTab(BaseTab):
         )
         self.info_label.grid(row=4, column=0, columnspan=5, sticky="we", padx=10, pady=(10, 0))
 
+        self.update_rspace_state()
 
-    # Update login state
+    # ---------------------------------------------------------
+    # RSpace login state
+    # ---------------------------------------------------------
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
             self.rspace_check.configure(state="normal")
         else:
             self.rspace_check.configure(state="disabled")
 
-
-    # Update Pyrat-ID pulldown
+    # ---------------------------------------------------------
+    # Refresh Pyrat IDs (called by MainWindow polling)
+    # ---------------------------------------------------------
     def refresh_pyrat_ids(self):
         alive_ids = self.mouse_service.get_alive_mice_with_none()
         self.pyrat_option.configure(values=alive_ids)
 
-        # Optional: Auswahl zurücksetzen
         if alive_ids:
             self.pyrat_option.set(alive_ids[0])
 
-
+    # ---------------------------------------------------------
     # Submit kill event
+    # ---------------------------------------------------------
     def _on_submit(self):
         pyrat_id = self.pyrat_option.get()
         dod = self.kill_date_combo.get()
@@ -131,26 +136,26 @@ class KillAnimalTab(BaseTab):
             pyrat_id, dod, tod, method, purpose, comment
         )
 
-        self.info_label.configure(text=msg)
-
-        if ok:
-            self._clear_fields()
-            self.refresh_pyrat_ids()
-
         if not ok:
-            self.info_label.configure(text=msg)
             self.show_error(msg)
             return
 
         # Success
+        self.show_success(msg)
         self.status_label.configure(text=f"{pyrat_id}\nmarked as dead.")
 
+        self._clear_fields()
+        self.refresh_pyrat_ids()
 
+    # ---------------------------------------------------------
+    # Clear fields
+    # ---------------------------------------------------------
     def _clear_fields(self):
         self.kill_date_combo.set("")
         self.kill_time_entry.delete(0, "end")
-        self.kill_time_entry.configure(self, placeholder_text="hh:mm")
-        #self.method_combo.set("")
-        #self.purpose_combo.set("")
+        self.kill_time_entry.configure(placeholder_text="hh:mm")
+
         self.comment_entry.delete(0, "end")
-        self.comment_entry.configure(placeholder_text = "e. g. lost headmount or for histology")
+        self.comment_entry.configure(
+            placeholder_text="e. g. lost headmount or for histology"
+        )
