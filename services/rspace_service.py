@@ -39,8 +39,14 @@ class RSpaceService:
 
         return True, None
 
+
+    def get_reg_surgeons(self) -> list[str] | None:
+        return self.login_repo.load_surgeons()
+
+
     def get_current_surgeon(self) -> str | None:
         return self.current_surgeon
+
 
     def export_mouse_to_rspace(self, mouse_data: dict, comment: str | None):
         if not self.logged_in:

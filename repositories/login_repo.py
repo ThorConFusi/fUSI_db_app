@@ -4,6 +4,7 @@ class LoginRepository:
     def __init__(self, db: Database):
         self.db = db
 
+
     def get_credentials(self, surgeon: str):
         try:
             cur = self.db.safe_query("""
@@ -17,3 +18,13 @@ class LoginRepository:
             return None, None, None
         except DatabaseError:
             return None, None, None
+
+
+    # Load surgeons from DB
+    def load_surgeons(self):
+        try:
+            cur = self.db.safe_query("SELECT Surgeon FROM Login_data")
+            rows = cur.fetchall()
+            return [row["Surgeon"] for row in rows] if rows else ["none available"]
+        except DatabaseError:
+            return ["none available"]

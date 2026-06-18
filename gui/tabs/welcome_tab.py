@@ -21,7 +21,7 @@ class WelcomeTab(ctk.CTkFrame):
         ctk.CTkLabel(self, text="Surgeon:", anchor="e", width=100).grid(row=1, column=0)
         self.login_option = ctk.CTkOptionMenu(
             self,
-            values=self._load_surgeons()
+            values=self.rspace_service.get_reg_surgeons()    #self._load_surgeons()
         )
         self.login_option.grid(row=1, column=1, padx=10)
 
@@ -49,16 +49,6 @@ class WelcomeTab(ctk.CTkFrame):
             anchor="center"
         )
         self.rspace_label.grid(row=1, column=2, rowspan=3, columnspan=2)
-
-
-    # Load surgeons from DB
-    def _load_surgeons(self):
-        try:
-            cur = self.db.safe_query("SELECT Surgeon FROM Login_data")
-            rows = cur.fetchall()
-            return [row["Surgeon"] for row in rows] if rows else ["none available"]
-        except Exception:
-            return ["none available"]
 
 
     # Login handler
