@@ -71,3 +71,15 @@ class Database:
             return cur
         except sqlite3.Error as e:
             raise DatabaseError(f"DB error: {e}")
+
+    def safe_query_dict(self, query: str, params=()) -> dict | None:
+        """Return a single row as a dictionary, or None."""
+        cur = self.safe_query(query, params)
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+    def safe_query_all_dicts(self, query: str, params=()) -> list[dict]:
+        """Return all rows as a list of dictionaries."""
+        cur = self.safe_query(query, params)
+        rows = cur.fetchall()
+        return [dict(r) for r in rows]

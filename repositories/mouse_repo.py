@@ -1,48 +1,36 @@
-import sqlite3
-from database.db import DatabaseError
+from database.db import Database
 
 
 class MouseRepository:
-    def __init__(self, db):
+    def __init__(self, db: Database):
         self.db = db
 
-    # ---------------------------------------------------------
-    # SELECT (read from DB)
-    # ---------------------------------------------------------
     def mouse_exists(self, pyrat_id: str) -> bool:
-        cur = self.db.safe_query(
-            "SELECT 1 FROM Mouse_data WHERE [Pyrat-ID] = ?",
-            (pyrat_id,)
-        )
-        return cur.fetchone() is not None
-
+        row = self.db.safe_query_dict("""
+            SELECT 1
+            FROM Mouse_data
+            WHERE [Pyrat-ID] = ?
+        """, (pyrat_id,))
+        return row is not None
 
     def get_alive_mice_ids(self) -> list[str]:
-        cur = self.db.safe_query("""
+        rows = self.db.safe_query_all_dicts("""
             SELECT [Pyrat-ID]
             FROM Mouse_data
             WHERE TRIM(IFNULL([D.o.Death], '')) = ''
         """)
-        return [row[0] for row in cur.fetchall()]
-
+        return [r["Pyrat-ID"] for r in rows]
 
     def get_mouse_by_id(self, pyrat_id: str) -> dict | None:
-        cur = self.db.safe_query("""
+        return self.db.safe_query_dict("""
             SELECT *
             FROM Mouse_data
             WHERE [Pyrat-ID] = ?
         """, (pyrat_id,))
-        row = cur.fetchone()
-        return dict(row) if row else None
 
-
-    # ---------------------------------------------------------
-    # WRITE (Upload to DB)
-    # ---------------------------------------------------------
     def insert_mouse(self, pyrat_id, dob, sex, line, dos, tos, surgeon, license_) -> bool:
         try:
-            cur = self.db.conn.cursor()
-            cur.execute("""
+            self.db.safe_query("""
                 INSERT INTO Mouse_data (
                     [Pyrat-ID], [D.o.Birth], Sex, Line,
                     [D.o.Surgery], [T.o.Surgery],
@@ -50,14 +38,11 @@ class MouseRepository:
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (pyrat_id, dob, sex, line, dos, tos, surgeon, license_))
-
             self.db.conn.commit()
             return True
-
         except Exception as e:
             print("DB INSERT ERROR:", e)
             return False
-
 
     def kill_mouse(self, pyrat_id, dod, tod, method, purpose, comment) -> bool:
         try:
@@ -68,12 +53,8 @@ class MouseRepository:
                     Kill_method = ?, Kill_purpose = ?, Kill_comment = ?
                 WHERE [Pyrat-ID] = ?
             """, (dod, tod, method, purpose, comment, pyrat_id))
-
             self.db.conn.commit()
-
-            # Check for row change
             return cur.rowcount > 0
-
         except Exception as e:
             print("DB UPDATE ERROR:", e)
             return False
