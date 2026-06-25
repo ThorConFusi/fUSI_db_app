@@ -1,6 +1,7 @@
 import customtkinter as ctk
-import params
 from gui.base_tab import BaseTab
+from gui.dialogs import ExportPopup
+import params
 
 
 class KillAnimalTab(BaseTab):
@@ -17,13 +18,18 @@ class KillAnimalTab(BaseTab):
     def _build_ui(self):
         # Pyrat ID
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
+
+        ok, mice, err = self.mouse_service.get_alive_mice()
+        if not ok or not mice:
+            mice = ["none available"]
+
         self.pyrat_option = ctk.CTkOptionMenu(
             self,
+            values=mice,
             fg_color="lightyellow",
             button_color="darkgrey",
             button_hover_color="grey",
-            text_color="black",
-            values=self.mouse_service.get_alive_mice_with_none()
+            text_color="black"
         )
         self.pyrat_option.grid(row=0, column=1, padx=(10, 40))
 
@@ -112,17 +118,7 @@ class KillAnimalTab(BaseTab):
             self.rspace_check.configure(state="disabled")
 
     # ---------------------------------------------------------
-    # Refresh Pyrat IDs (called by MainWindow polling)
-    # ---------------------------------------------------------
-    def refresh_pyrat_ids(self):
-        alive_ids = self.mouse_service.get_alive_mice_with_none()
-        self.pyrat_option.configure(values=alive_ids)
-
-        if alive_ids:
-            self.pyrat_option.set(alive_ids[0])
-
-    # ---------------------------------------------------------
-    # Submit kill event
+    # Submit kill
     # ---------------------------------------------------------
     def _on_submit(self):
         pyrat_id = self.pyrat_option.get()
@@ -132,30 +128,73 @@ class KillAnimalTab(BaseTab):
         purpose = self.purpose_combo.get()
         comment = self.comment_entry.get()
 
-        ok, msg = self.mouse_service.kill_mouse(
+        ok, _, err = self.mouse_service.kill_mouse(
             pyrat_id, dod, tod, method, purpose, comment
         )
 
         if not ok:
-            self.show_error(msg)
+            self.show_error(err)
             return
 
-        # Success
-        self.show_success(msg)
-        self.status_label.configure(text=f"{pyrat_id}\nmarked as dead.")
+        self.show_success(f"{pyrat_id} updated (killed).")
+
+        # Optional RSpace upload
+        if self.rspace_var.get() == "on":
+            self._upload_kill_to_rspace(
+                pyrat_id, dod, tod, method, purpose, comment
+            )
 
         self._clear_fields()
         self.refresh_pyrat_ids()
 
     # ---------------------------------------------------------
+    # RSpace upload
+    # ---------------------------------------------------------
+    def _upload_kill_to_rspace(self, pyrat_id, dod, tod, method, purpose, comment):
+        # Build the session-like kill dict
+        kill_data = {
+            "Pyrat-ID": pyrat_id,
+            "Date of Death": dod,
+            "Time of Death": tod,
+            "Kill Method": method,
+            "Kill Purpose": purpose,
+            "Kill Comment": comment
+        }
+
+        def handle_comment(extra_comment):
+            ok, response, err = self.rspace_service.export_mouse_to_rspace(
+                kill_data,
+                extra_comment
+            )
+
+            if not ok:
+                self.show_error(f"RSpace upload failed: {err}")
+                return
+
+            self.info_label.configure(text=f"Uploaded to RSpace: {response}")
+
+        ExportPopup(
+            master=self,
+            data_dict=kill_data,
+            title=f"Export Kill Info for {pyrat_id}",
+            on_submit=handle_comment
+        )
+
+    # ---------------------------------------------------------
     # Clear fields
     # ---------------------------------------------------------
     def _clear_fields(self):
-        self.kill_date_combo.set("")
-        self.kill_time_entry.delete(0, "end")
-        self.kill_time_entry.configure(placeholder_text="hh:mm")
-
+        self.tod_entry.delete(0, "end")
+        self.tod_entry.configure(placeholder_text="hh:mm")
         self.comment_entry.delete(0, "end")
-        self.comment_entry.configure(
-            placeholder_text="e. g. lost headmount or for histology"
-        )
+
+    # ---------------------------------------------------------
+    # Refresh Pyrat IDs
+    # ---------------------------------------------------------
+    def refresh_pyrat_ids(self):
+        ok, mice, err = self.mouse_service.get_alive_mice()
+        if not ok or not mice:
+            mice = ["none available"]
+
+        self.pyrat_option.configure(values=mice)
+        self.pyrat_option.set(mice[0])

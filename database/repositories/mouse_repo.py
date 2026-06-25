@@ -5,6 +5,10 @@ class MouseRepository:
     def __init__(self, db: Database):
         self.db = db
 
+    # ---------------------------------------------------------
+    # READ
+    # ---------------------------------------------------------
+
     def mouse_exists(self, pyrat_id: str) -> bool:
         row = self.db.safe_query_dict("""
             SELECT 1
@@ -19,7 +23,7 @@ class MouseRepository:
             FROM Mouse_data
             WHERE TRIM(IFNULL([D.o.Death], '')) = ''
         """)
-        return [r["Pyrat-ID"] for r in rows]
+        return [r["Pyrat-ID"] for r in rows] if rows else []
 
     def get_mouse_by_id(self, pyrat_id: str) -> dict | None:
         return self.db.safe_query_dict("""
@@ -28,9 +32,14 @@ class MouseRepository:
             WHERE [Pyrat-ID] = ?
         """, (pyrat_id,))
 
+    # ---------------------------------------------------------
+    # WRITE
+    # ---------------------------------------------------------
+
     def insert_mouse(self, pyrat_id, dob, sex, line, dos, tos, surgeon, license_) -> bool:
         try:
-            self.db.safe_query("""
+            cur = self.db.conn.cursor()
+            cur.execute("""
                 INSERT INTO Mouse_data (
                     [Pyrat-ID], [D.o.Birth], Sex, Line,
                     [D.o.Surgery], [T.o.Surgery],
@@ -38,10 +47,11 @@ class MouseRepository:
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (pyrat_id, dob, sex, line, dos, tos, surgeon, license_))
+
             self.db.conn.commit()
             return True
-        except Exception as e:
-            print("DB INSERT ERROR:", e)
+
+        except Exception:
             return False
 
     def kill_mouse(self, pyrat_id, dod, tod, method, purpose, comment) -> bool:
@@ -53,8 +63,9 @@ class MouseRepository:
                     Kill_method = ?, Kill_purpose = ?, Kill_comment = ?
                 WHERE [Pyrat-ID] = ?
             """, (dod, tod, method, purpose, comment, pyrat_id))
+
             self.db.conn.commit()
             return cur.rowcount > 0
-        except Exception as e:
-            print("DB UPDATE ERROR:", e)
+
+        except Exception:
             return False

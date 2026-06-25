@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from PIL import Image
 
 
 class WelcomeTab(ctk.CTkFrame):
@@ -19,9 +20,14 @@ class WelcomeTab(ctk.CTkFrame):
 
         # Surgeon dropdown
         ctk.CTkLabel(self, text="Surgeon:", anchor="e", width=100).grid(row=1, column=0)
+
+        ok, surgeons, err = self.rspace_service.get_reg_surgeons()
+        if not ok or not surgeons:
+            surgeons = ["none available"]
+
         self.login_option = ctk.CTkOptionMenu(
             self,
-            values=self.rspace_service.get_reg_surgeons()    #self._load_surgeons()
+            values=surgeons
         )
         self.login_option.grid(row=1, column=1, padx=10)
 
@@ -50,36 +56,42 @@ class WelcomeTab(ctk.CTkFrame):
         )
         self.rspace_label.grid(row=1, column=2, rowspan=3, columnspan=2)
 
+        # fUSI logo
+        self.logo_img = ctk.CTkImage(
+            light_image=Image.open("iFUSI_Logo.png"),
+            dark_image=Image.open("iFUSI_Logo.png"),
+            size=(240, 120)
+        )
+
+        self.logo_label = ctk.CTkLabel(
+            self,
+            text="",
+            image=self.logo_img,
+        )
+
+        self.logo_label.grid(row=1, column=5, rowspan=3, columnspan=2)
 
     # Login handler
     def _on_login(self):
         surgeon = self.login_option.get()
         pw = self.pw_entry.get()
 
-        ok, msg = self.rspace_service.check_login(surgeon, pw)
-
-        if ok:
-            self.rspace_label.configure(
-                text=f"Password correct!\n{self.rspace_service.get_current_surgeon()} connected.",
-                fg_color="lightgreen"
-            )
-            # Activate checkbox in AddAnimalTab
-            self.main_window.add_animal_tab.update_rspace_state()
-            self.main_window.add_session_tab.update_rspace_state()
-            self.main_window.kill_tab.update_rspace_state()
-            return
+        ok, _, err = self.rspace_service.check_login(surgeon, pw)
 
         if not ok:
             self.rspace_label.configure(
-                text=f"Login failed:\n{msg}",
+                text=f"Login failed:\n{err}",
                 fg_color="lightyellow"
             )
             return
 
         # Success
         self.rspace_label.configure(
-            text=f"Password correct!\n"
-                 f"{self.rspace_service.get_current_surgeon()} is now\n"
-                 f"connected to RSpace",
+            text=f"Password correct!\n{surgeon} connected.",
             fg_color="lightgreen"
         )
+
+        # Activate checkboxes in all upload tabs
+        self.main_window.add_animal_tab.update_rspace_state()
+        self.main_window.add_session_tab.update_rspace_state()
+        self.main_window.kill_tab.update_rspace_state()

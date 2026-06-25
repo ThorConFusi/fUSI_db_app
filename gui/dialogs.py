@@ -77,3 +77,66 @@ class SessionDetailsPopup(ctk.CTkToplevel):
 
         container.grid_columnconfigure(0, weight=1)
         container.grid_columnconfigure(1, weight=1)
+
+
+class ExportPopup(ctk.CTkToplevel):
+    def __init__(self, master, data_dict: dict, title: str, on_submit):
+        super().__init__(master)
+        self.title(title)
+        self.minsize(600, 600)
+        self.geometry("600x600")
+        self.grab_set()
+
+        self.on_submit = on_submit
+
+        container = ctk.CTkFrame(self)
+        container.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Header
+        ctk.CTkLabel(
+            container,
+            text="Record Information",
+            font=("Arial", 16, "bold")
+        ).grid(row=0, column=0, sticky="w", pady=(0, 10))
+
+        # Display dictionary content (read‑only)
+        row = 1
+        for key, value in data_dict.items():
+            ctk.CTkLabel(container, text=f"{key}:").grid(
+                row=row, column=0, sticky="w", padx=10, pady=3
+            )
+            ctk.CTkLabel(container, text=str(value)).grid(
+                row=row, column=0, sticky="e", padx=200, pady=3
+            )
+            row += 1
+
+        # Comment section
+        footer = ctk.CTkFrame(self)
+        footer.pack(fill="x", padx=20, pady=(0, 20))
+
+        ctk.CTkLabel(
+            footer,
+            text="Additional Information (optional):",
+            font=("Arial", 14, "bold")
+        ).pack(anchor="w")
+
+        self.comment_box = ctk.CTkTextbox(footer, width=680, height=120)
+        self.comment_box.pack(fill="x", pady=5)
+
+        # Buttons
+        button_frame = ctk.CTkFrame(self)
+        button_frame.pack(fill="x", padx=20, pady=(0, 20))
+
+        ctk.CTkButton(button_frame, text="Cancel", command=self.destroy).pack(
+            side="right", padx=10
+        )
+        ctk.CTkButton(button_frame, text="Submit", command=self._submit).pack(
+            side="right"
+        )
+
+    def _submit(self):
+        comment = self.comment_box.get("0.0", "end").strip()
+        if comment == "":
+            comment = None
+        self.on_submit(comment)
+        self.destroy()

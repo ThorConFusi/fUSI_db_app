@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import params
 from gui.base_tab import BaseTab
+from gui.dialogs import ExportPopup
 
 
 class AddAnimalTab(BaseTab):
@@ -89,7 +90,7 @@ class AddAnimalTab(BaseTab):
 
         self.update_rspace_state()
 
-        # Info label (BaseTab uses this)
+        # Info label
         self.info_label = ctk.CTkLabel(
             self,
             text="",
@@ -123,28 +124,54 @@ class AddAnimalTab(BaseTab):
         surgeon = self.surgeon_combo.get()
         license_ = self.license_combo.get()
 
-        ok, msg = self.mouse_service.register_mouse(
+        ok, _, err = self.mouse_service.register_mouse(
             pyrat_id, dob, sex, line, dos, tos, surgeon, license_
         )
 
         if not ok:
-            self.show_error(msg)
+            self.show_error(err)
             return
 
-        # Success
-        self.show_success(msg)
+        self.show_success(f"{pyrat_id} stored in database.")
+
+        # Automatic RSpace upload
+        if self.rspace_var.get() == "on":
+            self._upload_mouse_to_rspace(pyrat_id)
+
         self._clear_fields()
+
+    # ---------------------------------------------------------
+    # Handle popup and RSpace upload
+    # ---------------------------------------------------------
+    def _upload_mouse_to_rspace(self, pyrat_id):
+        ok, mouse_data, err = self.mouse_service.get_mouse_export_data(pyrat_id)
+
+        if not ok:
+            self.show_error(err)
+            return
+
+        def handle_comment(comment):
+            ok, response, err = self.rspace_service.export_mouse_to_rspace(mouse_data, comment)
+
+            if not ok:
+                self.show_error(f"RSpace upload failed: {err}")
+                return
+
+            self.info_label.configure(text=f"Uploaded to RSpace: {response}")
+
+        ExportPopup(
+            master=self,
+            data_dict=mouse_data,
+            title=f"Export Mouse {pyrat_id}",
+            on_submit=handle_comment
+        )
 
     # ---------------------------------------------------------
     # Clear fields
     # ---------------------------------------------------------
     def _clear_fields(self):
         self.pyrat_entry.delete(0, "end")
-
         self.dob_entry.delete(0, "end")
         self.dob_entry.configure(placeholder_text="YYYY-MM-DD")
-
         self.tos_entry.delete(0, "end")
         self.tos_entry.configure(placeholder_text="hh:mm")
-
-        self.comment_entry = None  # no comment field here

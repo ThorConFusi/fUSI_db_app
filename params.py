@@ -72,4 +72,6 @@ kill_method: list[str] = [
 ]
 
 # Folder-ID for "mice" in RSpace
-rspace_folder_id = "248822"
+rspace_mice_folder_id = "FL248822"
+rspace_session_notebook_id = "NB484055"
+

@@ -9,7 +9,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         self.mouse_service = mouse_service
         self.session_service = session_service
 
-        self._sort_state = {}  # track sort order per column
+        self._sort_state = {}
 
         self._build_ui()
         self._style_treeview()
@@ -25,22 +25,18 @@ class DisplaySessionsTab(ctk.CTkFrame):
     # UI
     # ---------------------------------------------------------
     def _build_ui(self):
-        # Mouse selection
         ctk.CTkLabel(self, text="Mouse:").grid(row=0, column=0, padx=10)
         self.mouse_combo = ctk.CTkComboBox(self, command=self._on_filter_change)
         self.mouse_combo.grid(row=0, column=1, padx=10)
 
-        # Experiment selection
         ctk.CTkLabel(self, text="Experiment:").grid(row=0, column=2, padx=10)
         self.experiment_combo = ctk.CTkComboBox(self, command=self._on_filter_change)
         self.experiment_combo.grid(row=0, column=3, padx=10)
 
-        # Treeview
         columns = ("mouse", "date", "session_number", "experiment", "session")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
         self.tree.grid(row=1, column=0, columnspan=4, sticky="nsew", padx=10, pady=10)
 
-        # Headings
         self._headings = {
             "mouse": "Mouse",
             "date": "Date",
@@ -55,12 +51,10 @@ class DisplaySessionsTab(ctk.CTkFrame):
 
         self.tree.bind("<Double-1>", self._on_row_double_click)
 
-        # Scrollbar
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
         scrollbar.grid(row=1, column=4, sticky="ns")
         self.tree.configure(yscrollcommand=scrollbar.set)
 
-        # Grid config
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
@@ -69,14 +63,11 @@ class DisplaySessionsTab(ctk.CTkFrame):
     # ---------------------------------------------------------
     def _style_treeview(self):
         style = ttk.Style()
-
-        # Ensure a theme is active (fixes missing headers)
         try:
             style.theme_use("default")
         except:
             pass
 
-        # Header style
         style.configure(
             "Treeview.Heading",
             background="#006699",
@@ -84,7 +75,6 @@ class DisplaySessionsTab(ctk.CTkFrame):
             font=("Arial", 11, "bold")
         )
 
-        # Zebra rows
         style.configure("Treeview", rowheight=24)
         style.map("Treeview", background=[("selected", "#98d3ff")])
 
@@ -95,17 +85,23 @@ class DisplaySessionsTab(ctk.CTkFrame):
     # Mouse list
     # ---------------------------------------------------------
     def _refresh_mouse_list(self):
-        alive_raw = self.mouse_service.get_alive_mice()
-        alive = [m for m in alive_raw if m != "all"]  # remove accidental "all"
+        ok, mice, err = self.mouse_service.get_alive_mice()
+        if not ok or not mice:
+            mice = ["all"]
 
-        values = ["all", "all living"] + alive
+        # remove accidental "all"
+        mice_clean = [m for m in mice if m != "all"]
+
+        values = ["all", "all living"] + mice_clean
         self.mouse_combo.configure(values=values)
 
     # ---------------------------------------------------------
     # Experiment list
     # ---------------------------------------------------------
     def _refresh_experiment_list(self):
-        exps = self.session_service.get_all_experiments()
+        ok, exps, err = self.session_service.get_all_experiments()
+        if not ok or not exps:
+            exps = []
         self.experiment_combo.configure(values=["all"] + exps)
 
     # ---------------------------------------------------------
@@ -115,7 +111,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         mouse_filter = self.mouse_combo.get()
         exp_filter = self.experiment_combo.get()
 
-        ok, all_sessions = self.session_service.get_all_sessions()
+        ok, all_sessions, err = self.session_service.get_all_sessions()
         if not ok:
             self._clear_tree()
             return
@@ -124,7 +120,9 @@ class DisplaySessionsTab(ctk.CTkFrame):
         if mouse_filter == "all":
             pass
         elif mouse_filter == "all living":
-            alive = self.mouse_service.get_alive_mice()
+            ok, alive, err = self.mouse_service.get_alive_mice()
+            if not ok:
+                alive = []
             all_sessions = [s for s in all_sessions if s.get("Pyrat-ID") in alive]
         else:
             all_sessions = [s for s in all_sessions if s.get("Pyrat-ID") == mouse_filter]
@@ -147,25 +145,20 @@ class DisplaySessionsTab(ctk.CTkFrame):
             return value.lower()
 
     def _sort_by_column(self, col):
-        # Extract data
         data = []
         for item in self.tree.get_children(""):
             raw = self.tree.set(item, col)
             key = self._convert_for_sort(raw)
             data.append((key, item))
 
-        # Toggle sort order
         reverse = self._sort_state.get(col, False)
         self._sort_state[col] = not reverse
 
-        # Sort
         data.sort(reverse=reverse)
 
-        # Reinsert rows
         for index, (_, item) in enumerate(data):
             self.tree.move(item, "", index)
 
-        # Update column headers with arrows (right aligned)
         for c in self.tree["columns"]:
             base = self._headings[c]
             if c == col:
@@ -212,13 +205,13 @@ class DisplaySessionsTab(ctk.CTkFrame):
         date = values[1]
         session_number = values[2]
 
-        ok_s, session_data = self.session_service.get_session_by_keys(
+        ok_s, session_data, err_s = self.session_service.get_session_by_keys(
             pyrat_id, date, session_number
         )
         if not ok_s:
             session_data = {}
 
-        ok_m, mouse_data = self.mouse_service.get_mouse_export_data(pyrat_id)
+        ok_m, mouse_data, err_m = self.mouse_service.get_mouse_export_data(pyrat_id)
         if not ok_m:
             mouse_data = {}
 

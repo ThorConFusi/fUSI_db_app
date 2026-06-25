@@ -1,83 +1,144 @@
 import params
-import requests
 from services.validators import validate_dropdown, ValidationError
+from clients.rspace_client import RSpaceClient
+
 
 class RSpaceService:
-    def __init__(self, login_repo):
+    def __init__(self, login_repo, mouse_repo):
         self.login_repo = login_repo
+        self.mouse_repo = mouse_repo
         self.logged_in = False
         self.current_surgeon = None
-        self.api_base = None
-        self.api_key = None
-        self.folder_id = params.rspace_folder_id
+        self.client = None
+        self.folder_id = params.rspace_mice_folder_id
 
+    # ---------------------------------------------------------
+    # LOGIN
+    # ---------------------------------------------------------
     def check_login(self, surgeon: str, password: str):
         try:
             validate_dropdown(surgeon, "surgeon")
         except ValidationError as e:
-            return False, str(e)
+            return False, None, str(e)
 
         if not password:
-            return False, "Password cannot be empty"
+            return False, None, "Password cannot be empty"
 
-        stored_pw, api_base, api_key = self.login_repo.get_credentials(surgeon)
+        creds = self.login_repo.get_credentials(surgeon)
+        if creds is None:
+            return False, None, "No login data found for this surgeon"
 
-        if stored_pw is None:
-            return False, "No login data found for this surgeon"
+        if creds.password != password:
+            return False, None, "Incorrect password"
 
-        if stored_pw != password:
-            return False, "Incorrect password"
+        if not creds.api_base or not creds.api_key:
+            return False, None, "API configuration missing for this surgeon"
 
-        if not api_base or not api_key:
-            return False, "API configuration missing for this surgeon"
+        # API-Base normalisieren
+        api_base = creds.api_base.rstrip("/")
+        if not api_base.endswith("/api/v1"):
+            api_base = api_base + "/api/v1"
+        api_base = api_base.replace("/api/v1", "")  # Client hängt /api/v1 selbst an
 
-        # Login successful → set global Configuration
+        # RSpaceClient erzeugen
+        self.client = RSpaceClient(api_key=creds.api_key, url=api_base)
+
+        ok, msg = self.client.check_connection()
+        if not ok:
+            return False, None, msg
+
         self.logged_in = True
         self.current_surgeon = surgeon
-        self.api_base = api_base.rstrip("/")
-        self.api_key = api_key
+        return True, None, None
 
-        return True, None
+    # ---------------------------------------------------------
+    # SURGEON LIST
+    # ---------------------------------------------------------
+    def get_reg_surgeons(self):
+        try:
+            surgeons = self.login_repo.load_surgeons()
+            return True, surgeons if surgeons else [], None
+        except Exception as e:
+            return False, [], f"Unexpected error: {e}"
 
+    # ---------------------------------------------------------
+    # CURRENT SURGEON
+    # ---------------------------------------------------------
+    def get_current_surgeon(self):
+        return True, self.current_surgeon, None
 
-    def get_reg_surgeons(self) -> list[str] | None:
-        return self.login_repo.load_surgeons()
-
-
-    def get_current_surgeon(self) -> str | None:
-        return self.current_surgeon
-
-
-    def export_mouse_to_rspace(self, mouse_data: dict, comment: str | None):
+    # ---------------------------------------------------------
+    # EXPORT
+    # ---------------------------------------------------------
+    def export_mouse_to_rspace(self, data_dict: dict, comment: str | None):
         if not self.logged_in:
-            return False, "Not connected to RSpace"
+            return False, None, "Not connected to RSpace"
 
-        if not self.api_key or not self.api_base:
-            return False, "RSpace API not configured"
+        # Dokumentname: #TEST836 statt Mouse_TES-T836
+        pyrat_id = data_dict.get("Pyrat-ID", "unknown")
+        docname = f"#{pyrat_id.replace('-', '')}"
 
-        docname = "#" + mouse_data["Pyrat-ID"].replace("-", "")
-        content = self._build_mouse_document(mouse_data, comment)
+        # Inhalt: HTML mit allen Feldern + Kommentar
+        content = self._build_rspace_content(data_dict, comment)
+        if not content.strip():
+            return False, None, "No content to upload"
 
-        url = f"{self.api_base}/documents"
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
+        body = {
             "name": docname,
-            "folderId": self.folder_id,
-            "content": content,
+            "folderId": self.folder_id,  # z.B. "FL248822"
+            "content": f"<div>{content}</div>",
             "type": "richtext"
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers)
+            result = self.client._post("documents", body)
         except Exception as e:
-            return False, f"Network error: {e}"
+            return False, None, f"RSpace error: {e}"
 
-        if response.status_code not in (200, 201):
-            return False, f"RSpace error {response.status_code}: {response.text}"
+        # Erfolgsmeldung kürzen
+        short_msg = f"Uploaded to RSpace: {result.get('name')} (ID {result.get('id')})"
+        return True, short_msg, None
 
-        return True, docname
+    # ---------------------------------------------------------
+    # HELPERS
+    # ---------------------------------------------------------
+    def _build_rspace_content(self, data_dict: dict, comment: str | None):
+        if not data_dict:
+            return "<b>No data provided</b>"
+
+        # Mouse- und Session-Daten trennen
+        mouse_keys = [
+            "Pyrat-ID", "Sex", "Line", "D.o.Birth",
+            "D.o.Surgery", "T.o.Surgery",
+            "D.o.Death", "T.o.Death",
+            "Kill_method", "Kill_purpose", "Kill_comment"
+        ]
+
+        session_keys = [
+            "D.o.Recording", "T.o.Recording",
+            "Session_number", "Experiment", "Session"
+        ]
+
+        # HTML-Abschnitte erzeugen
+        html_parts = []
+
+        # Mouse Information
+        html_parts.append("<h2>Mouse Information</h2>")
+        for key in mouse_keys:
+            value = data_dict.get(key, "—")
+            html_parts.append(f"<b>{key}</b>: {value}")
+
+        # Session Information
+        html_parts.append("<br><h2>Session Information</h2>")
+        for key in session_keys:
+            value = data_dict.get(key, "—")
+            html_parts.append(f"<b>{key}</b>: {value}")
+
+        # Kommentar
+        if comment:
+            html_parts.append("<br><h2>Comment</h2>")
+            html_parts.append(comment.strip())
+
+        # Alles zusammenfügen
+        return "<br>".join(html_parts)
+

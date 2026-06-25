@@ -1,8 +1,10 @@
+
+
 from database.db import Database
 
-from repositories.login_repo import LoginRepository
-from repositories.mouse_repo import MouseRepository
-from repositories.session_repo import SessionRepository
+from database.repositories.login_repo import LoginRepository
+from database.repositories.mouse_repo import MouseRepository
+from database.repositories.session_repo import SessionRepository
 
 from services.rspace_service import RSpaceService
 from services.mouse_service import MouseService
@@ -21,7 +23,7 @@ def main():
     session_repo = SessionRepository(db)
 
     # Services
-    rspace_service = RSpaceService(login_repo)
+    rspace_service = RSpaceService(login_repo, mouse_repo)
     mouse_service = MouseService(mouse_repo)
     session_service = SessionService(session_repo)
 

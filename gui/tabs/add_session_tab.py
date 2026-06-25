@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from gui.base_tab import BaseTab
 import params
+from gui.dialogs import ExportPopup
 
 
 class AddSessionTab(BaseTab):
@@ -18,13 +19,18 @@ class AddSessionTab(BaseTab):
     def _build_ui(self):
         # Pyrat ID
         ctk.CTkLabel(self, text="Pyrat ID:", anchor="e", width=100).grid(row=0, column=0)
+
+        ok, alive, err = self.mouse_service.get_alive_mice()
+        if not ok or not alive:
+            alive = ["none available"]
+
         self.pyrat_option = ctk.CTkOptionMenu(
             self,
             fg_color="lightyellow",
             button_color="darkgrey",
             button_hover_color="grey",
             text_color="black",
-            values=self.mouse_service.get_alive_mice_with_none(),
+            values=alive,
             command=self._update_session_label
         )
         self.pyrat_option.grid(row=0, column=1, padx=(10, 40))
@@ -90,7 +96,7 @@ class AddSessionTab(BaseTab):
         )
         self.comment_entry.grid(row=3, column=1, columnspan=3, padx=(10, 40), pady=2)
 
-        # Info label (BaseTab uses this)
+        # Info label
         self.info_label = ctk.CTkLabel(
             self,
             text="",
@@ -123,12 +129,12 @@ class AddSessionTab(BaseTab):
             self.rec_label.configure(text="No valid mouse")
             return
 
-        ok, result = self.session_service.get_next_session_number_safe(pyrat_id)
+        ok, next_num, err = self.session_service.get_next_session_number_safe(pyrat_id)
+
         if not ok:
-            self.show_error(result)
+            self.show_error(err)
             return
 
-        next_num = result
         self.rec_label.configure(text=f"fUS recording\nsession no. {next_num}")
 
     # ---------------------------------------------------------
@@ -142,21 +148,59 @@ class AddSessionTab(BaseTab):
         sess = self.session_combo.get()
         comment = self.comment_entry.get()
 
-        ok, result = self.session_service.create_session(
+        ok, next_num, err = self.session_service.create_session(
             pyrat_id, exp, sess_date, sess_time, sess, comment
         )
 
         if not ok:
-            self.show_error(result)
+            self.show_error(err)
             return
 
-        next_num = result
         self.rec_label.configure(text=f"fUS recording\nsession no. {next_num}")
-
         self.show_success(f"Session for {pyrat_id} saved successfully.")
+
+        # Optional RSpace upload
+        if self.rspace_var.get() == "on":
+            self._upload_session_to_rspace(pyrat_id, next_num, sess_date)
 
         self._clear_fields()
         self.refresh_pyrat_ids()
+
+    # ---------------------------------------------------------
+    # RSpace upload
+    # ---------------------------------------------------------
+    def _upload_session_to_rspace(self, pyrat_id, session_number, sess_date):
+        # 1. Get session data
+        ok, session_data, err = self.session_service.get_session_by_keys(
+            pyrat_id,
+            sess_date,
+            session_number
+        )
+
+        if not ok:
+            self.show_error(err)
+            return
+
+        # 2. Callback für Popup
+        def handle_comment(comment):
+            ok, response, err = self.rspace_service.export_mouse_to_rspace(
+                session_data,
+                comment
+            )
+
+            if not ok:
+                self.show_error(f"RSpace upload failed: {err}")
+                return
+
+            self.info_label.configure(text=f"Uploaded to RSpace: {response}")
+
+        # 3. Popup öffnen
+        ExportPopup(
+            master=self,
+            data_dict=session_data,
+            title=f"Export Session {session_number} for {pyrat_id}",
+            on_submit=handle_comment
+        )
 
     # ---------------------------------------------------------
     # Clear fields
@@ -170,17 +214,12 @@ class AddSessionTab(BaseTab):
         self.comment_entry.configure(placeholder_text="e. g. quality of cranial window")
 
     # ---------------------------------------------------------
-    # Refresh Pyrat IDs (called by MainWindow polling)
+    # Refresh Pyrat IDs
     # ---------------------------------------------------------
     def refresh_pyrat_ids(self):
-        alive_ids = self.mouse_service.get_alive_mice_with_none()
-        self.pyrat_option.configure(values=alive_ids)
+        ok, alive, err = self.mouse_service.get_alive_mice()
+        if not ok or not alive:
+            alive = ["none available"]
 
-        if alive_ids:
-            self.pyrat_option.set(alive_ids[0])
-
-    # ---------------------------------------------------------
-    # Error handler (now via BaseTab)
-    # ---------------------------------------------------------
-    def _show_error(self, msg: str):
-        self.show_error(msg)
+        self.pyrat_option.configure(values=alive)
+        self.pyrat_option.set(alive[0])

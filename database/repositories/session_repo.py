@@ -2,6 +2,10 @@ class SessionRepository:
     def __init__(self, db):
         self.db = db
 
+    # ---------------------------------------------------------
+    # READ
+    # ---------------------------------------------------------
+
     def get_sessions_for_mouse(self, pyrat_id):
         return self.db.safe_query_all_dicts("""
             SELECT *
@@ -16,7 +20,7 @@ class SessionRepository:
             FROM Session_data
             ORDER BY Experiment
         """)
-        return [r["Experiment"] for r in rows]
+        return [r["Experiment"] for r in rows] if rows else []
 
     def get_all_sessions(self):
         return self.db.safe_query_all_dicts("""
@@ -32,12 +36,17 @@ class SessionRepository:
             WHERE [Pyrat-ID] = ?
               AND [D.o.Recording] = ?
               AND CAST([Session_number] AS TEXT) = CAST(? AS TEXT)
-        """, (pyrat_id, date, session_number)) or {}
+        """, (pyrat_id, date, session_number))
+
+    # ---------------------------------------------------------
+    # WRITE
+    # ---------------------------------------------------------
 
     def insert_session(self, pyrat_id, experiment, session_number,
                        d_recording, t_recording, session, comment) -> bool:
         try:
-            self.db.safe_query("""
+            cur = self.db.conn.cursor()
+            cur.execute("""
                 INSERT INTO Session_data (
                     [Pyrat-ID], Experiment, Session_number,
                     [D.o.Recording], [T.o.Recording],
@@ -49,8 +58,9 @@ class SessionRepository:
                 d_recording, t_recording,
                 session, comment
             ))
+
             self.db.conn.commit()
             return True
-        except Exception as e:
-            print("DB INSERT ERROR:", e)
+
+        except Exception:
             return False
