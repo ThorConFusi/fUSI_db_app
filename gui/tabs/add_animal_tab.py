@@ -9,6 +9,7 @@ class AddAnimalTab(BaseTab):
         super().__init__(master)
         self.mouse_service = mouse_service
         self.rspace_service = rspace_service
+        self.rspace_client = None
         self.today_and_before = today_and_before
         self._build_ui()
 
@@ -144,14 +145,21 @@ class AddAnimalTab(BaseTab):
     # Handle popup and RSpace upload
     # ---------------------------------------------------------
     def _upload_mouse_to_rspace(self, pyrat_id):
+        # 1. Get mouse data
         ok, mouse_data, err = self.mouse_service.get_mouse_export_data(pyrat_id)
 
         if not ok:
             self.show_error(err)
             return
 
-        def handle_comment(comment):
-            ok, response, err = self.rspace_service.export_mouse_to_rspace(mouse_data, comment)
+        # 2. Callback for Popup
+        def handle_comment(data_dict, comment, folder_id, folder_type):
+            ok, response, err = self.rspace_service.export_to_rspace(
+                data_dict,
+                comment,
+                folder_id,
+                folder_type
+            )
 
             if not ok:
                 self.show_error(f"RSpace upload failed: {err}")
@@ -159,11 +167,13 @@ class AddAnimalTab(BaseTab):
 
             self.info_label.configure(text=f"Uploaded to RSpace: {response}")
 
+        # 3. Open Popup
         ExportPopup(
             master=self,
             data_dict=mouse_data,
             title=f"Export Mouse {pyrat_id}",
-            on_submit=handle_comment
+            on_submit=handle_comment,
+            rspace_client = self.rspace_client
         )
 
     # ---------------------------------------------------------

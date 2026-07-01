@@ -80,39 +80,80 @@ class SessionDetailsPopup(ctk.CTkToplevel):
 
 
 class ExportPopup(ctk.CTkToplevel):
-    def __init__(self, master, data_dict: dict, title: str, on_submit):
+    def __init__(self, master, data_dict: dict, title: str, on_submit, rspace_client):
         super().__init__(master)
         self.title(title)
-        self.minsize(600, 600)
-        self.geometry("600x600")
+        self.geometry("750x600")
+        self.minsize(750, 600)
         self.grab_set()
 
         self.on_submit = on_submit
+        self.rspace_client = rspace_client
+        self.data_dict = data_dict
 
+        # ---------------------------------------------------------
+        # AUTOMATISCHE DATENSATZ-ERKENNUNG
+        # ---------------------------------------------------------
+        self.is_mouse = "D.o.Surgery" in data_dict
+        self.is_session = "Session_number" in data_dict
+
+        # Dummy-Werte (Upload geht immer in Api Inbox)
+        self.selected_folder_id = 492620
+        self.selected_folder_type = "api_inbox"
+
+        # ---------------------------------------------------------
+        # MAIN CONTAINER
+        # ---------------------------------------------------------
         container = ctk.CTkFrame(self)
-        container.pack(fill="both", expand=True, padx=20, pady=20)
+        container.pack(fill="both", expand=True, padx=20, pady=(20, 10))
 
-        # Header
         ctk.CTkLabel(
             container,
             text="Record Information",
             font=("Arial", 16, "bold")
         ).grid(row=0, column=0, sticky="w", pady=(0, 10))
 
-        # Display dictionary content (read‑only)
-        row = 1
-        for key, value in data_dict.items():
-            ctk.CTkLabel(container, text=f"{key}:").grid(
-                row=row, column=0, sticky="w", padx=10, pady=3
-            )
-            ctk.CTkLabel(container, text=str(value)).grid(
-                row=row, column=0, sticky="e", padx=200, pady=3
-            )
-            row += 1
+        # ---------------------------------------------------------
+        # ZWEISPALTIGE DARSTELLUNG
+        # ---------------------------------------------------------
+        keys = list(data_dict.keys())
+        values = list(data_dict.values())
 
-        # Comment section
+        # Maximal 7 links, Rest rechts
+        left_keys = keys[:7]
+        left_vals = values[:7]
+        right_keys = keys[7:]
+        right_vals = values[7:]
+
+        # Linke Spalte
+        left_frame = ctk.CTkFrame(container)
+        left_frame.grid(row=1, column=0, sticky="nw", padx=10)
+
+        for i, (k, v) in enumerate(zip(left_keys, left_vals)):
+            ctk.CTkLabel(left_frame, text=f"{k}:").grid(
+                row=i, column=0, sticky="w", pady=3
+            )
+            ctk.CTkLabel(left_frame, text=str(v)).grid(
+                row=i, column=1, sticky="w", pady=3
+            )
+
+        # Rechte Spalte
+        right_frame = ctk.CTkFrame(container)
+        right_frame.grid(row=1, column=1, sticky="nw", padx=10)
+
+        for i, (k, v) in enumerate(zip(right_keys, right_vals)):
+            ctk.CTkLabel(right_frame, text=f"{k}:").grid(
+                row=i, column=0, sticky="w", pady=3
+            )
+            ctk.CTkLabel(right_frame, text=str(v)).grid(
+                row=i, column=1, sticky="w", pady=3
+            )
+
+        # ---------------------------------------------------------
+        # COMMENT SECTION
+        # ---------------------------------------------------------
         footer = ctk.CTkFrame(self)
-        footer.pack(fill="x", padx=20, pady=(0, 20))
+        footer.pack(fill="x", padx=20, pady=(0, 10))
 
         ctk.CTkLabel(
             footer,
@@ -120,12 +161,20 @@ class ExportPopup(ctk.CTkToplevel):
             font=("Arial", 14, "bold")
         ).pack(anchor="w")
 
-        self.comment_box = ctk.CTkTextbox(footer, width=680, height=120)
+        self.comment_box = ctk.CTkTextbox(footer, width=560, height=120)
         self.comment_box.pack(fill="x", pady=5)
 
-        # Buttons
+        # ---------------------------------------------------------
+        # BUTTON FRAME
+        # ---------------------------------------------------------
         button_frame = ctk.CTkFrame(self)
         button_frame.pack(fill="x", padx=20, pady=(0, 20))
+
+        ctk.CTkLabel(
+            button_frame,
+            text="Target Folder: Api Inbox",
+            font=("Arial", 14, "bold")
+        ).pack(side="left", padx=(0, 10))
 
         ctk.CTkButton(button_frame, text="Cancel", command=self.destroy).pack(
             side="right", padx=10
@@ -134,9 +183,20 @@ class ExportPopup(ctk.CTkToplevel):
             side="right"
         )
 
+    # ---------------------------------------------------------
+    # SUBMIT
+    # ---------------------------------------------------------
     def _submit(self):
         comment = self.comment_box.get("0.0", "end").strip()
         if comment == "":
             comment = None
-        self.on_submit(comment)
+
+        # Callback aufrufen (Tabs bleiben unverändert)
+        self.on_submit(
+            self.data_dict,
+            comment,
+            self.selected_folder_id,
+            self.selected_folder_type
+        )
+
         self.destroy()

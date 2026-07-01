@@ -7,6 +7,9 @@ the lists can be called as 'params.my_list'.
 First compiled 03-06-2026 by Thoralf Opitz (topitz@uni-bonn.de)
 """
 
+# Destination for RSpace uploads
+api_inbox_id = 492620
+
 # Headers of tabs in main window
 tab_title: tuple[str, str, str, str, str] = (
     "add Animal",
@@ -15,8 +18,6 @@ tab_title: tuple[str, str, str, str, str] = (
     "Welcome",
     "display Sessions"
 )
-
-mouse_sex: list[str] = ["Female", "Male"]
 
 # List of commonly used mouse lines, partially including genotype
 mouse_line: list[str] = [
@@ -71,7 +72,4 @@ kill_method: list[str] = [
     "deceased"
 ]
 
-# Folder-ID for "mice" in RSpace
-rspace_mice_folder_id = "FL248822"
-rspace_session_notebook_id = "NB484055"
-
+mouse_sex: list[str] = ["Female", "Male"]

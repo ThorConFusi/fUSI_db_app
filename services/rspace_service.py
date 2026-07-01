@@ -1,4 +1,3 @@
-import params
 from services.validators import validate_dropdown, ValidationError
 from clients.rspace_client import RSpaceClient
 
@@ -10,7 +9,6 @@ class RSpaceService:
         self.logged_in = False
         self.current_surgeon = None
         self.client = None
-        self.folder_id = params.rspace_mice_folder_id
 
     # ---------------------------------------------------------
     # LOGIN
@@ -34,13 +32,11 @@ class RSpaceService:
         if not creds.api_base or not creds.api_key:
             return False, None, "API configuration missing for this surgeon"
 
-        # API-Base normalisieren
         api_base = creds.api_base.rstrip("/")
-        if not api_base.endswith("/api/v1"):
-            api_base = api_base + "/api/v1"
-        api_base = api_base.replace("/api/v1", "")  # Client hängt /api/v1 selbst an
+        if api_base.endswith("/api/v1"):
+            api_base = api_base[:-7]
+        api_base = api_base.rstrip("/")
 
-        # RSpaceClient erzeugen
         self.client = RSpaceClient(api_key=creds.api_key, url=api_base)
 
         ok, msg = self.client.check_connection()
@@ -62,51 +58,46 @@ class RSpaceService:
             return False, [], f"Unexpected error: {e}"
 
     # ---------------------------------------------------------
-    # CURRENT SURGEON
+    # UNIFIED EXPORT (always to Api Inbox)
     # ---------------------------------------------------------
-    def get_current_surgeon(self):
-        return True, self.current_surgeon, None
+    def export_to_rspace(self, data_dict: dict, comment: str | None,
+                         folder_id: int, folder_type: str):
 
-    # ---------------------------------------------------------
-    # EXPORT
-    # ---------------------------------------------------------
-    def export_mouse_to_rspace(self, data_dict: dict, comment: str | None):
+        print("DEBUG data_dict:", type(data_dict), data_dict)
+        print("DEBUG comment:", comment)
+
         if not self.logged_in:
             return False, None, "Not connected to RSpace"
 
-        # Dokumentname: #TEST836 statt Mouse_TES-T836
-        pyrat_id = data_dict.get("Pyrat-ID", "unknown")
-        docname = f"#{pyrat_id.replace('-', '')}"
+        # Maus oder Session?
+        if "D.o.Surgery" in data_dict:
+            docname = self._build_mouse_docname(data_dict)
+        else:
+            docname = self._build_session_docname(data_dict)
 
-        # Inhalt: HTML mit allen Feldern + Kommentar
         content = self._build_rspace_content(data_dict, comment)
-        if not content.strip():
-            return False, None, "No content to upload"
-
-        body = {
-            "name": docname,
-            "folderId": self.folder_id,  # z.B. "FL248822"
-            "content": f"<div>{content}</div>",
-            "type": "richtext"
-        }
 
         try:
-            result = self.client._post("documents", body)
+            result = self.client.upload_to_api_inbox(
+                name=docname,
+                content=content
+            )
+            short_msg = f"Uploaded to Api Inbox: '{result.get('name')}' (ID {result.get('id')})"
+            return True, short_msg, None
+
         except Exception as e:
             return False, None, f"RSpace error: {e}"
 
-        # Erfolgsmeldung kürzen
-        short_msg = f"Uploaded to RSpace: {result.get('name')} (ID {result.get('id')})"
-        return True, short_msg, None
-
     # ---------------------------------------------------------
-    # HELPERS
+    # CONTENT BUILDER
     # ---------------------------------------------------------
     def _build_rspace_content(self, data_dict: dict, comment: str | None):
+
+        print("DEBUG building content from:", type(data_dict), data_dict)
+
         if not data_dict:
             return "<b>No data provided</b>"
 
-        # Mouse- und Session-Daten trennen
         mouse_keys = [
             "Pyrat-ID", "Sex", "Line", "D.o.Birth",
             "D.o.Surgery", "T.o.Surgery",
@@ -119,26 +110,38 @@ class RSpaceService:
             "Session_number", "Experiment", "Session"
         ]
 
-        # HTML-Abschnitte erzeugen
         html_parts = []
 
-        # Mouse Information
         html_parts.append("<h2>Mouse Information</h2>")
         for key in mouse_keys:
-            value = data_dict.get(key, "—")
-            html_parts.append(f"<b>{key}</b>: {value}")
+            html_parts.append(f"<b>{key}</b>: {data_dict.get(key, '—')}")
 
-        # Session Information
         html_parts.append("<br><h2>Session Information</h2>")
         for key in session_keys:
-            value = data_dict.get(key, "—")
-            html_parts.append(f"<b>{key}</b>: {value}")
+            html_parts.append(f"<b>{key}</b>: {data_dict.get(key, '—')}")
 
-        # Kommentar
         if comment:
             html_parts.append("<br><h2>Comment</h2>")
             html_parts.append(comment.strip())
 
-        # Alles zusammenfügen
         return "<br>".join(html_parts)
 
+    # ---------------------------------------------------------
+    # DOCUMENT NAME BUILDERS
+    # ---------------------------------------------------------
+    def _build_mouse_docname(self, data_dict: dict) -> str:
+        pid = data_dict.get("Pyrat-ID", "unknown")
+        return f"#{pid.replace('-', '')}"
+
+    def _build_session_docname(self, data_dict: dict) -> str:
+        date_raw = data_dict.get("D.o.Recording", "unknown_date")
+        date = date_raw.replace("-", "")
+
+        time_raw = data_dict.get("T.o.Recording", "unknown_time")
+        time = time_raw.replace(":", "")
+
+        number = str(data_dict.get("Session_number", "unknown_session"))
+        experiment = data_dict.get("Experiment", "unknown_experiment")
+        session_type = data_dict.get("Session", "unknown_type")
+
+        return f"{date}_{time}_{number}_{experiment}_{session_type}"

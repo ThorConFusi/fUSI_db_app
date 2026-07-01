@@ -10,6 +10,7 @@ class AddSessionTab(BaseTab):
         self.mouse_service = mouse_service
         self.session_service = session_service
         self.rspace_service = rspace_service
+        self.rspace_client = None
         self.today_and_before = today_and_before
         self._build_ui()
 
@@ -116,6 +117,7 @@ class AddSessionTab(BaseTab):
     def update_rspace_state(self):
         if self.rspace_service.logged_in:
             self.rspace_check.configure(state="normal")
+            self.rspace_client = self.rspace_service.client
         else:
             self.rspace_check.configure(state="disabled")
 
@@ -181,11 +183,13 @@ class AddSessionTab(BaseTab):
             self.show_error(err)
             return
 
-        # 2. Callback für Popup
-        def handle_comment(comment):
-            ok, response, err = self.rspace_service.export_mouse_to_rspace(
-                session_data,
-                comment
+        # 2. Callback for Popup
+        def handle_comment(data_dict, comment, folder_id, folder_type):
+            ok, response, err = self.rspace_service.export_to_rspace(
+                data_dict,
+                comment,
+                folder_id,
+                folder_type
             )
 
             if not ok:
@@ -194,12 +198,13 @@ class AddSessionTab(BaseTab):
 
             self.info_label.configure(text=f"Uploaded to RSpace: {response}")
 
-        # 3. Popup öffnen
+        # 3. Open Popup
         ExportPopup(
             master=self,
             data_dict=session_data,
             title=f"Export Session {session_number} for {pyrat_id}",
-            on_submit=handle_comment
+            on_submit=handle_comment,
+            rspace_client=self.rspace_client
         )
 
     # ---------------------------------------------------------
