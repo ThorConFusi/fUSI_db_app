@@ -1,5 +1,6 @@
 from services.validators import validate_dropdown, ValidationError
 from clients.rspace_client import RSpaceClient
+import params
 
 
 class RSpaceService:
@@ -48,7 +49,7 @@ class RSpaceService:
         return True, None, None
 
     # ---------------------------------------------------------
-    # SURGEON LIST
+    # SURGEON LIST (to fill dropdown)
     # ---------------------------------------------------------
     def get_reg_surgeons(self):
         try:
@@ -62,20 +63,19 @@ class RSpaceService:
     # ---------------------------------------------------------
     def export_to_rspace(self, data_dict: dict, comment: str | None,
                          folder_id: int, folder_type: str):
-
-        print("DEBUG data_dict:", type(data_dict), data_dict)
-        print("DEBUG comment:", comment)
-
         if not self.logged_in:
             return False, None, "Not connected to RSpace"
 
-        # Maus oder Session?
+        # Mouse or Session?
         if "D.o.Surgery" in data_dict:
-            docname = self._build_mouse_docname(data_dict)
+            if data_dict["D.o.Death"] == None:
+                docname = self._build_mouse_docname(data_dict)
+            else:
+                docname = self._build_sacrifice_docname(data_dict)
         else:
             docname = self._build_session_docname(data_dict)
 
-        content = self._build_rspace_content(data_dict, comment)
+        content = self._build_rspace_content(data_dict, comment, docname)
 
         try:
             result = self.client.upload_to_api_inbox(
@@ -89,45 +89,7 @@ class RSpaceService:
             return False, None, f"RSpace error: {e}"
 
     # ---------------------------------------------------------
-    # CONTENT BUILDER
-    # ---------------------------------------------------------
-    def _build_rspace_content(self, data_dict: dict, comment: str | None):
-
-        print("DEBUG building content from:", type(data_dict), data_dict)
-
-        if not data_dict:
-            return "<b>No data provided</b>"
-
-        mouse_keys = [
-            "Pyrat-ID", "Sex", "Line", "D.o.Birth",
-            "D.o.Surgery", "T.o.Surgery",
-            "D.o.Death", "T.o.Death",
-            "Kill_method", "Kill_purpose", "Kill_comment"
-        ]
-
-        session_keys = [
-            "D.o.Recording", "T.o.Recording",
-            "Session_number", "Experiment", "Session"
-        ]
-
-        html_parts = []
-
-        html_parts.append("<h2>Mouse Information</h2>")
-        for key in mouse_keys:
-            html_parts.append(f"<b>{key}</b>: {data_dict.get(key, '—')}")
-
-        html_parts.append("<br><h2>Session Information</h2>")
-        for key in session_keys:
-            html_parts.append(f"<b>{key}</b>: {data_dict.get(key, '—')}")
-
-        if comment:
-            html_parts.append("<br><h2>Comment</h2>")
-            html_parts.append(comment.strip())
-
-        return "<br>".join(html_parts)
-
-    # ---------------------------------------------------------
-    # DOCUMENT NAME BUILDERS
+    # HELPER FUNCTIONS
     # ---------------------------------------------------------
     def _build_mouse_docname(self, data_dict: dict) -> str:
         pid = data_dict.get("Pyrat-ID", "unknown")
@@ -145,3 +107,75 @@ class RSpaceService:
         session_type = data_dict.get("Session", "unknown_type")
 
         return f"{date}_{time}_{number}_{experiment}_{session_type}"
+
+    def _build_sacrifice_docname(self, data_dict: dict) -> str:
+        date_raw = data_dict.get("D.o.Death", "unknown_date")
+        date = date_raw.replace("-", "")
+
+        time_raw = data_dict.get("T.o.Death", "unknown_time")
+        time = time_raw.replace(":", "")
+
+        method = data_dict.get("Kill_method", "unknown_method")
+
+        return f"{date}_{time}_{method}"
+
+    def _validate_keys(self, data_dict: dict, keys: list[str]) -> tuple[list[str], list[str]]:
+        valid = []
+        invalid = []
+
+        for key in keys:
+            if key in data_dict:
+                valid.append(key)
+            else:
+                invalid.append(key)
+
+        return valid, invalid
+
+    def _determine_doc_type(self, data_dict: dict) -> str:
+        if "D.o.Surgery" in data_dict:
+            if data_dict["D.o.Death"] == None:
+                return "mouse"
+            else:
+                return "sacrifice"
+        return "session"
+
+    # ---------------------------------------------------------
+    # CONTENT BUILDER
+    # ---------------------------------------------------------
+    def _build_rspace_content(self, data_dict: dict, comment: str | None, docname: str):
+        if not data_dict:
+            return "<b>No data provided</b>"
+
+        # Determine dokument type
+        doc_type = self._determine_doc_type(data_dict)
+
+        if doc_type == "mouse":
+            keys = params.mouse_keys
+            section_title = "Mouse Information"
+        elif doc_type == "sacrifice":
+            keys = params.sacrifice_keys
+            section_title = "Sacrifice Information"
+        else:
+            keys = params.session_keys
+            section_title = "Session Information"
+
+        # Validate keys
+        valid_keys, invalid_keys = self._validate_keys(data_dict, keys)
+
+        html_parts = [f"<h2>{section_title}</h2>"]
+
+        # Display valid keys only
+        for key in valid_keys:
+            html_parts.append(f"<b>{key}</b>: {data_dict.get(key, '—')}")
+
+        # Display invalid keys (optional)
+        if invalid_keys:
+            html_parts.append("<br><h3>⚠️ Invalid Keys (not found in data)</h3>")
+            html_parts.append(", ".join(invalid_keys))
+
+        # Comment
+        if comment:
+            html_parts.append("<br><h2>Comment</h2>")
+            html_parts.append(comment.strip())
+
+        return "<br>".join(html_parts)

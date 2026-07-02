@@ -9,6 +9,7 @@ class KillAnimalTab(BaseTab):
         super().__init__(master)
         self.mouse_service = mouse_service
         self.rspace_service = rspace_service
+        self.rspace_client = None
         self.today_and_before = today_and_before
         self._build_ui()
 
@@ -138,33 +139,31 @@ class KillAnimalTab(BaseTab):
 
         self.show_success(f"{pyrat_id} updated (killed).")
 
-        # Optional RSpace upload
+        # Automatic RSpace upload
         if self.rspace_var.get() == "on":
-            self._upload_kill_to_rspace(
-                pyrat_id, dod, tod, method, purpose, comment
-            )
+            self._upload_sacrifice_to_rspace(pyrat_id)
 
         self._clear_fields()
         self.refresh_pyrat_ids()
 
     # ---------------------------------------------------------
-    # RSpace upload
+    # Handle popup and RSpace upload
     # ---------------------------------------------------------
-    def _upload_kill_to_rspace(self, pyrat_id, dod, tod, method, purpose, comment):
-        # Build the session-like kill dict
-        kill_data = {
-            "Pyrat-ID": pyrat_id,
-            "Date of Death": dod,
-            "Time of Death": tod,
-            "Kill Method": method,
-            "Kill Purpose": purpose,
-            "Kill Comment": comment
-        }
+    def _upload_sacrifice_to_rspace(self, pyrat_id):
+        # 1. Get mouse data
+        ok, mouse_data, err = self.mouse_service.get_mouse_export_data(pyrat_id)
 
-        def handle_comment(extra_comment):
-            ok, response, err = self.rspace_service.export_mouse_to_rspace(
-                kill_data,
-                extra_comment
+        if not ok:
+            self.show_error(err)
+            return
+
+        # 2. Callback for Popup
+        def handle_comment(data_dict, comment, folder_id, folder_type):
+            ok, response, err = self.rspace_service.export_to_rspace(
+                data_dict,
+                comment,
+                folder_id,
+                folder_type
             )
 
             if not ok:
@@ -173,19 +172,21 @@ class KillAnimalTab(BaseTab):
 
             self.info_label.configure(text=f"Uploaded to RSpace: {response}")
 
+        # 3. Open Popup
         ExportPopup(
             master=self,
-            data_dict=kill_data,
-            title=f"Export Kill Info for {pyrat_id}",
-            on_submit=handle_comment
+            data_dict=mouse_data,
+            title=f"Export Sacrifice Info for {pyrat_id}",
+            on_submit=handle_comment,
+            rspace_client=self.rspace_client
         )
 
     # ---------------------------------------------------------
     # Clear fields
     # ---------------------------------------------------------
     def _clear_fields(self):
-        self.tod_entry.delete(0, "end")
-        self.tod_entry.configure(placeholder_text="hh:mm")
+        self.kill_time_entry.delete(0, "end")
+        self.kill_time_entry.configure(placeholder_text="hh:mm")
         self.comment_entry.delete(0, "end")
 
     # ---------------------------------------------------------
