@@ -12,7 +12,7 @@ class RSpaceService:
         self.client = None
 
     # ---------------------------------------------------------
-    # LOGIN
+    # LOGIN (to fetch APIkey and APIbase from DB)
     # ---------------------------------------------------------
     def check_login(self, surgeon: str, password: str):
         try:
@@ -66,16 +66,17 @@ class RSpaceService:
         if not self.logged_in:
             return False, None, "Not connected to RSpace"
 
-        # Mouse or Session?
-        if "D.o.Surgery" in data_dict:
-            if data_dict["D.o.Death"] == None:
-                docname = self._build_mouse_docname(data_dict)
-            else:
-                docname = self._build_sacrifice_docname(data_dict)
+        if self._determine_doc_type(data_dict) == "mouse":
+            docname = self._build_mouse_docname(data_dict)
+            doc_type = "mouse"
+        elif self._determine_doc_type(data_dict) == "sacrifice":
+            docname = self._build_sacrifice_docname(data_dict)
+            doc_type = "sacrifice"
         else:
             docname = self._build_session_docname(data_dict)
+            doc_type = "session"
 
-        content = self._build_rspace_content(data_dict, comment, docname)
+        content = self._build_rspace_content(data_dict, comment, doc_type)
 
         try:
             result = self.client.upload_to_api_inbox(
@@ -142,13 +143,11 @@ class RSpaceService:
     # ---------------------------------------------------------
     # CONTENT BUILDER
     # ---------------------------------------------------------
-    def _build_rspace_content(self, data_dict: dict, comment: str | None, docname: str):
+    def _build_rspace_content(self, data_dict: dict, comment: str | None, doc_type: str):
         if not data_dict:
             return "<b>No data provided</b>"
 
         # Determine dokument type
-        doc_type = self._determine_doc_type(data_dict)
-
         if doc_type == "mouse":
             keys = params.mouse_keys
             section_title = "Mouse Information"

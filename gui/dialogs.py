@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import params
 
 
 class SessionDetailsPopup(ctk.CTkToplevel):
@@ -92,10 +93,28 @@ class ExportPopup(ctk.CTkToplevel):
         self.data_dict = data_dict
 
         # ---------------------------------------------------------
-        # AUTOMATISCHE DATENSATZ-ERKENNUNG
+        # AUTOMATIC DATASET RECOGNITION
         # ---------------------------------------------------------
         self.is_mouse = "D.o.Surgery" in data_dict
         self.is_session = "Session_number" in data_dict
+
+        if self.is_mouse:
+            if data_dict.get("D.o.Death") is None:
+                title_text = "Mouse Record – Add Mouse"
+                keys_to_display = params.mouse_keys
+                add_info = params.comment_surgery
+            else:
+                title_text = "Mouse Record – Sacrifice Mouse"
+                keys_to_display = params.sacrifice_keys
+                add_info = params.comment_sacrifice
+        elif self.is_session:
+            title_text = "Session Record - Add Session"
+            keys_to_display = list(data_dict.keys())
+            add_info = []
+        else:
+            title_text = "Record Information"
+            keys_to_display = list(data_dict.keys())
+            add_info = []
 
         # Dummy-Werte (Upload geht immer in Api Inbox)
         self.selected_folder_id = 492620
@@ -109,44 +128,24 @@ class ExportPopup(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             container,
-            text="Record Information",
+            text=title_text,
             font=("Arial", 16, "bold")
-        ).grid(row=0, column=0, sticky="w", pady=(0, 10))
+        ).pack(fill="x", padx=20, pady=(0, 10))
 
         # ---------------------------------------------------------
-        # ZWEISPALTIGE DARSTELLUNG
+        # DATA DISPLAY
         # ---------------------------------------------------------
-        keys = list(data_dict.keys())
-        values = list(data_dict.values())
+        data_frame = ctk.CTkFrame(container)
+        data_frame.pack(fill="x", padx=20, pady=(0, 10))
 
-        # Maximal 7 links, Rest rechts
-        left_keys = keys[:7]
-        left_vals = values[:7]
-        right_keys = keys[7:]
-        right_vals = values[7:]
+        for i, key in enumerate(keys_to_display):
+            value = data_dict.get(key, "—")
 
-        # Linke Spalte
-        left_frame = ctk.CTkFrame(container)
-        left_frame.grid(row=1, column=0, sticky="nw", padx=10)
-
-        for i, (k, v) in enumerate(zip(left_keys, left_vals)):
-            ctk.CTkLabel(left_frame, text=f"{k}:").grid(
-                row=i, column=0, sticky="w", pady=3
+            ctk.CTkLabel(data_frame, text=f"{key}:").grid(
+                row=i, column=0, sticky="w", padx=(3, 20)
             )
-            ctk.CTkLabel(left_frame, text=str(v)).grid(
-                row=i, column=1, sticky="w", pady=3
-            )
-
-        # Rechte Spalte
-        right_frame = ctk.CTkFrame(container)
-        right_frame.grid(row=1, column=1, sticky="nw", padx=10)
-
-        for i, (k, v) in enumerate(zip(right_keys, right_vals)):
-            ctk.CTkLabel(right_frame, text=f"{k}:").grid(
-                row=i, column=0, sticky="w", pady=3
-            )
-            ctk.CTkLabel(right_frame, text=str(v)).grid(
-                row=i, column=1, sticky="w", pady=3
+            ctk.CTkLabel(data_frame, text=str(value)).grid(
+                row=i, column=1, sticky="w", padx=20
             )
 
         # ---------------------------------------------------------
@@ -163,6 +162,7 @@ class ExportPopup(ctk.CTkToplevel):
 
         self.comment_box = ctk.CTkTextbox(footer, width=560, height=120)
         self.comment_box.pack(fill="x", pady=5)
+        self.comment_box.insert("0.0", add_info)
 
         # ---------------------------------------------------------
         # BUTTON FRAME
@@ -191,7 +191,7 @@ class ExportPopup(ctk.CTkToplevel):
         if comment == "":
             comment = None
 
-        # Callback aufrufen (Tabs bleiben unverändert)
+        # Callback (Tabs stay untouched)
         self.on_submit(
             self.data_dict,
             comment,
