@@ -106,10 +106,13 @@ class ExportPopup(ctk.CTkToplevel):
             else:
                 title_text = "Mouse Record – Sacrifice Mouse"
                 keys_to_display = params.sacrifice_keys
-                add_info = params.comment_sacrifice
+                if data_dict["Kill_method"] == "perfusion":
+                    add_info = params.comment_sacrifice
+                else:
+                    add_info = []
         elif self.is_session:
             title_text = "Session Record - Add Session"
-            keys_to_display = list(data_dict.keys())
+            keys_to_display = params.session_keys
             add_info = []
         else:
             title_text = "Record Information"
