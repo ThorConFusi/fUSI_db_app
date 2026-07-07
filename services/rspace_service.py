@@ -4,9 +4,10 @@ import params
 
 
 class RSpaceService:
-    def __init__(self, login_repo, mouse_repo):
+    def __init__(self, login_repo, mouse_repo, session_repo):
         self.login_repo = login_repo
         self.mouse_repo = mouse_repo
+        self.session_repo = session_repo
         self.logged_in = False
         self.current_surgeon = None
         self.client = None
@@ -83,6 +84,19 @@ class RSpaceService:
                 name=docname,
                 content=content
             )
+
+            # Insert DB change of "..._in_RSpace" here!
+            pid = data_dict.get("Pyrat-ID", "unknown")
+
+            if doc_type == "mouse":
+                self.mouse_repo.mark_mouse_uploaded(pid)
+
+            if doc_type == "sacrifice":
+                self.mouse_repo.mark_sacrifice_uploaded(pid)
+
+            if doc_type == "session":
+                self.session_repo.mark_session_uploaded(pid)
+
             short_msg = f"Uploaded to Api Inbox: '{result.get('name')}' (ID {result.get('id')})"
             return True, short_msg, None
 

@@ -69,3 +69,33 @@ class MouseRepository:
 
         except Exception:
             return False
+
+    def mark_mouse_uploaded(self, pyrat_id) -> bool:
+        try:
+            cur = self.db.conn.cursor()
+            cur.execute("""
+                UPDATE Mouse_data
+                SET Mouse_in_RSpace = ?
+                WHERE [Pyrat-ID] = ?
+            """, (1, pyrat_id))
+
+            self.db.conn.commit()
+            return True
+
+        except Exception:
+            return False
+
+    def mark_sacrifice_uploaded(self, pyrat_id) -> bool:
+        try:
+            cur = self.db.conn.cursor()
+            cur.execute("""
+                UPDATE Mouse_data
+                SET Sacrifice_in_RSpace = ?
+                WHERE [Pyrat-ID] = ?
+            """, (1, pyrat_id))
+
+            self.db.conn.commit()
+            return True
+
+        except Exception:
+            return False

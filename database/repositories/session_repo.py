@@ -64,3 +64,18 @@ class SessionRepository:
 
         except Exception:
             return False
+
+    def mark_session_uploaded(self, pyrat_id) -> bool:
+        try:
+            cur = self.db.conn.cursor()
+            cur.execute("""
+                UPDATE Session_data
+                SET Session_in_RSpace = ?
+                WHERE [Pyrat-ID] = ?
+            """, (1, pyrat_id))
+
+            self.db.conn.commit()
+            return True
+
+        except Exception:
+            return False

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Finished RSpace upload for mice, sessions, and sacrifice">
+    <list default="true" id="7a4f46fa-faee-4b17-a387-11c591e5aa19" name="Changes" comment="Fixed bug in RSpace upload window">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui/dialogs.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/dialogs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/repositories/mouse_repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/repositories/mouse_repo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/repositories/session_repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/repositories/session_repo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/rspace_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/rspace_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -181,7 +183,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782997956741</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Fixed bug in RSpace upload window">
+      <option name="closed" value="true" />
+      <created>1783410624687</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1783410624687</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -208,6 +218,7 @@
     <MESSAGE value="GUI stable, project structure fixed, RSpace upload initiated" />
     <MESSAGE value="Established RSpace upload" />
     <MESSAGE value="Finished RSpace upload for mice, sessions, and sacrifice" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished RSpace upload for mice, sessions, and sacrifice" />
+    <MESSAGE value="Fixed bug in RSpace upload window" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in RSpace upload window" />
   </component>
 </project>

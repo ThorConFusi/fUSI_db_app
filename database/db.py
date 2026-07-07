@@ -32,31 +32,34 @@ class Database:
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Mouse_data (
-                [Pyrat-ID]    TEXT,
-                [D.o.Birth]   TEXT,
-                Sex           TEXT,
-                Line          TEXT,
-                [D.o.Surgery] TEXT,
-                [T.o.Surgery] TEXT,
-                Surgeon       TEXT,
-                License       TEXT,
-                [D.o.Death]   TEXT,
-                [T.o.Death]   TEXT,
-                Kill_method   TEXT,
-                Kill_purpose  TEXT,
-                Kill_comment  TEXT
+                [Pyrat-ID]          TEXT,
+                [D.o.Birth]         TEXT,
+                Sex                 TEXT,
+                Line                TEXT,
+                [D.o.Surgery]       TEXT,
+                [T.o.Surgery]       TEXT,
+                Mouse_in_RSpace     INTEGER DEFAULT (0),
+                Surgeon             TEXT,
+                License             TEXT,
+                [D.o.Death]         TEXT,
+                [T.o.Death]         TEXT,
+                Sacrifice_in_RSpace INTEGER DEFAULT (0),
+                Kill_method         TEXT,
+                Kill_purpose        TEXT,
+                Kill_comment        TEXT
             )
         """)
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Session_data (
-                [Pyrat-ID]      TEXT,
-                Experiment      TEXT,
-                Session_number  TEXT,
-                [D.o.Recording] TEXT,
-                [T.o.Recording] TEXT,
-                Session         TEXT,
-                Session_comment TEXT
+                [Pyrat-ID]          TEXT,
+                Experiment          TEXT,
+                Session_number      TEXT,
+                [D.o.Recording]     TEXT,
+                [T.o.Recording]     TEXT,
+                Session_in_RSpace   INTEGER DEFAULT (0),
+                Session             TEXT,
+                Session_comment     TEXT
             )
         """)
 

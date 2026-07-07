@@ -23,7 +23,7 @@ def main():
     session_repo = SessionRepository(db)
 
     # Services
-    rspace_service = RSpaceService(login_repo, mouse_repo)
+    rspace_service = RSpaceService(login_repo, mouse_repo, session_repo)
     mouse_service = MouseService(mouse_repo)
     session_service = SessionService(session_repo)
 
