@@ -6,8 +6,8 @@ class SessionDetailsPopup(ctk.CTkToplevel):
     def __init__(self, master, mouse_data: dict, session_data: dict):
         super().__init__(master)
         self.title(f"Session Details – {session_data.get('Pyrat-ID')}")
-        self.minsize(700, 400)
-        self.geometry("900x600")
+        self.minsize(700, 500)
+        self.geometry("900x750")
         self.grab_set()
 
         container = ctk.CTkFrame(self)
@@ -20,13 +20,16 @@ class SessionDetailsPopup(ctk.CTkToplevel):
         ctk.CTkLabel(container, text="Session Information", font=("Arial", 16, "bold")).grid(
             row=0, column=1, sticky="w", pady=(0, 10)
         )
+        ctk.CTkLabel(container, text="Sacrifice Information", font=("Arial", 16, "bold")).grid(
+            row=8, column=1, sticky="w", pady=(0, 10)
+        )
 
         # Left column: Mouse data
         mouse_fields = [
-            "Pyrat-ID", "Sex", "Line", "D.o.Birth",
-            "D.o.Surgery", "T.o.Surgery",
-            "D.o.Death", "T.o.Death",
-            "Kill_method", "Kill_purpose", "Kill_comment"
+            "Pyrat-ID", "Sex", "Line", "D.o.Birth", "License",
+            "D.o.Surgery", "Surgeon" #, "T.o.Surgery",
+            #"D.o.Death", "T.o.Death",
+            #"Kill_method", "Kill_purpose", "Kill_comment"
         ]
 
         row = 1
@@ -39,9 +42,20 @@ class SessionDetailsPopup(ctk.CTkToplevel):
             )
             row += 1
 
+        if mouse_data.get("Mouse_in_RSpace") == 0:
+            in_rspace = "Mouse not uploaded to RSpace yet!"
+            color = "red"
+        else:
+            in_rspace = "Mouse already uploaded to RSpace."
+            color = "green"
+
+        ctk.CTkLabel(container, text=in_rspace, text_color=color).grid(
+            row=row, column=0, sticky="w", padx=10, pady=3
+        )
+
         # Right column: Session data
         session_fields = {
-            "Pyrat-ID": session_data.get("Pyrat-ID"),
+            #"Pyrat-ID": session_data.get("Pyrat-ID"),
             "D.o.Recording": session_data.get("D.o.Recording"),
             "T.o.Recording": session_data.get("T.o.Recording"),
             "Session_number": session_data.get("Session_number"),
@@ -49,7 +63,6 @@ class SessionDetailsPopup(ctk.CTkToplevel):
             "Session": session_data.get("Session"),
         }
 
-        btn_row = row - 1
         row = 1
         for key, value in session_fields.items():
             ctk.CTkLabel(container, text=f"{key}:").grid(
@@ -60,20 +73,74 @@ class SessionDetailsPopup(ctk.CTkToplevel):
             )
             row += 1
 
+        if session_data.get("Session_in_RSpace") == 0:
+            in_rspace = "Session not uploaded to RSpace yet!"
+            color = "red"
+        else:
+            in_rspace = "Session already uploaded to RSpace."
+            color = "green"
+
+        ctk.CTkLabel(container, text=in_rspace, text_color=color).grid(
+            row=row, column=1, sticky="w", padx=10, pady=3
+        )
+
+        # Right column: Sacrifice data
+        sacrifice_fields = [
+            "D.o.Death", "Kill_method", "Kill_purpose"#, "Kill_comment"
+        ]
+
+        row = row + 3
+
+        if mouse_data.get("D.o.Death") == mouse_data.get("T.o.Death"):
+            ctk.CTkLabel(container, text="Mouse not sacrificed yet.").grid(
+                row=row, column=1, sticky="w", padx=10, pady=3
+            )
+        else:
+            for key in sacrifice_fields:
+                ctk.CTkLabel(container, text=f"{key}:").grid(
+                    row=row, column=1, sticky="w", padx=10, pady=3
+                )
+                ctk.CTkLabel(container, text=str(mouse_data.get(key, "—"))).grid(
+                    row=row, column=1, sticky="e", padx=40, pady=3
+                )
+                row += 1
+
+            if mouse_data.get("Sacrifice_in_RSpace") == 0:
+                in_rspace = "Sacrifice not uploaded to RSpace yet!"
+                color = "red"
+            else:
+                in_rspace = "Sacrifice already uploaded to RSpace."
+                color = "green"
+
+            ctk.CTkLabel(container, text=in_rspace, text_color=color).grid(
+                row=row, column=1, sticky="w", padx=10, pady=3
+            )
+
         # Session comment
-        footer = ctk.CTkFrame(self)
-        footer.pack(fill="x", padx=20, pady=(0, 20))
+        footer_session = ctk.CTkFrame(self)
+        footer_session.pack(fill="x", padx=20, pady=(0, 20))
 
-        ctk.CTkLabel(footer, text="Session Comment:", font=("Arial", 14, "bold")).pack(anchor="w")
+        ctk.CTkLabel(footer_session, text="Session Comment:", font=("Arial", 14, "bold")).pack(anchor="w")
 
-        comment_box = ctk.CTkTextbox(footer, width=680, height=120)
-        comment_box.insert("0.0", str(session_data.get("Session_comment", "")))
-        comment_box.configure(state="disabled")
-        comment_box.pack(fill="x", pady=5)
+        comment_box_session = ctk.CTkTextbox(footer_session, width=680, height=80)
+        comment_box_session.insert("0.0", str(session_data.get("Session_comment", "")))
+        comment_box_session.configure(state="disabled")
+        comment_box_session.pack(fill="x", pady=5)
+
+        # Sacrifice comment
+        footer_sacrifice = ctk.CTkFrame(self)
+        footer_sacrifice.pack(fill="x", padx=20, pady=(0, 20))
+
+        ctk.CTkLabel(footer_sacrifice, text="Sacrifice Comment:", font=("Arial", 14, "bold")).pack(anchor="w")
+
+        comment_box_sacrifice = ctk.CTkTextbox(footer_sacrifice, width=680, height=40)
+        comment_box_sacrifice.insert("0.0", str(mouse_data.get("Kill_comment", "")))
+        comment_box_sacrifice.configure(state="disabled")
+        comment_box_sacrifice.pack(fill="x", pady=5)
 
         # Close button
-        ctk.CTkButton(container, text="Close", command=self.destroy).grid(
-            row=btn_row, column=1, pady=(0, 20)
+        ctk.CTkButton(container, text="Close Information Window", command=self.destroy).grid(
+            row=11, column=0, pady=(0, 20)
         )
 
         container.grid_columnconfigure(0, weight=1)
