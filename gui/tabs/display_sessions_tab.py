@@ -33,9 +33,11 @@ class DisplaySessionsTab(ctk.CTkFrame):
         self.experiment_combo = ctk.CTkComboBox(self, command=self._on_filter_change)
         self.experiment_combo.grid(row=0, column=3, padx=10)
 
+        ctk.CTkButton(self, text="Export csv").grid(row=0, column=4, padx=20)
+
         columns = ("mouse", "date", "session_number", "experiment", "session")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
-        self.tree.grid(row=1, column=0, columnspan=4, sticky="nsew", padx=10, pady=10)
+        self.tree.grid(row=1, column=0, columnspan=5, sticky="nsew", padx=10, pady=10)
 
         self._headings = {
             "mouse": "Mouse",
@@ -52,7 +54,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         self.tree.bind("<Double-1>", self._on_row_double_click)
 
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        scrollbar.grid(row=1, column=4, sticky="ns")
+        scrollbar.grid(row=1, column=5, sticky="ns")
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         self.grid_rowconfigure(1, weight=1)
@@ -70,15 +72,15 @@ class DisplaySessionsTab(ctk.CTkFrame):
 
         style.configure(
             "Treeview.Heading",
-            background="#006699",
-            foreground="white",
+            background="#3377c8",
+            foreground="#cacaca",
             font=("Arial", 11, "bold")
         )
 
         style.configure("Treeview", rowheight=24)
-        style.map("Treeview", background=[("selected", "#98d3ff")])
+        style.map("Treeview", background=[("selected", "#797979")])
 
-        self.tree.tag_configure("odd", background="#f2f2f2")
+        self.tree.tag_configure("odd", background="#dadada")
         self.tree.tag_configure("even", background="white")
 
     # ---------------------------------------------------------
