@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from tkinter import ttk
 from gui.dialogs import SessionDetailsPopup
+from services.export_service import SessionExportService
+from tkinter import filedialog, messagebox
 
 
 class DisplaySessionsTab(ctk.CTkFrame):
@@ -8,6 +10,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         super().__init__(master)
         self.mouse_service = mouse_service
         self.session_service = session_service
+        self.export_service = SessionExportService()
 
         self._sort_state = {}
 
@@ -33,7 +36,7 @@ class DisplaySessionsTab(ctk.CTkFrame):
         self.experiment_combo = ctk.CTkComboBox(self, command=self._on_filter_change)
         self.experiment_combo.grid(row=0, column=3, padx=10)
 
-        ctk.CTkButton(self, text="Export csv").grid(row=0, column=4, padx=20)
+        ctk.CTkButton(self, text="Export csv", command=self._export_csv).grid(row=0, column=4, padx=20)
 
         columns = ("mouse", "date", "session_number", "experiment", "session")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
@@ -218,3 +221,37 @@ class DisplaySessionsTab(ctk.CTkFrame):
             mouse_data = {}
 
         SessionDetailsPopup(self, mouse_data, session_data)
+
+    # ---------------------------------------------------------
+    # CSV Export
+    # ---------------------------------------------------------
+    def _export_csv(self):
+        mouse_filter = self.mouse_combo.get()
+        exp_filter = self.experiment_combo.get()
+
+        # Dateidialog
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv")],
+            title="CSV speichern"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            ok = self.export_service.export_treeview_to_csv(
+                file_path=file_path,
+                tree=self.tree,
+                mouse_filter=mouse_filter,
+                exp_filter=exp_filter,
+                headings=self._headings
+            )
+
+            if ok:
+                messagebox.showinfo("Export erfolgreich", f"CSV gespeichert:\n{file_path}")
+            else:
+                messagebox.showerror("Fehler", "Export fehlgeschlagen.")
+
+        except Exception as e:
+            messagebox.showerror("Fehler beim Export", str(e))
