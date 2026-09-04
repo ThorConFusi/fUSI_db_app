@@ -1,4 +1,6 @@
 import csv
+import datetime
+
 
 class SessionExportService:
     """
@@ -33,4 +35,58 @@ class SessionExportService:
                 row = tree.item(item, "values")
                 writer.writerow(row)
 
+        return True
+
+
+class SacrificeExportService:
+    """
+    GUI-independent service for Export of Sacrifice/Kill information into a local HTML file.
+    """
+
+    def build_html(self, pyrat_id, dod, tod, method, purpose, comment):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+        html = f"""
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Sacrifice information</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; }}
+                h2 {{ color: #333; }}
+                table {{
+                    border-collapse: collapse;
+                    width: 60%;
+                }}
+                td, th {{
+                    border: 1px solid #999;
+                    padding: 8px;
+                }}
+                th {{
+                    background-color: #eee;
+                }}
+            </style>
+        </head>
+        <body>
+            <h2>Sacrifice information</h2>
+
+            <table>
+                <tr><th>Pyrat ID</th><td>{pyrat_id}</td></tr>
+                <tr><th>Date of Death</th><td>{dod}</td></tr>
+                <tr><th>Time of Death</th><td>{tod}</td></tr>
+                <tr><th>Method</th><td>{method}</td></tr>
+                <tr><th>Purpose</th><td>{purpose}</td></tr>
+                <tr><th>Comment</th><td>{comment}</td></tr>
+            </table>
+
+            <p><i>Generated: {timestamp}</i></p>
+        </body>
+        </html>
+        """
+
+        return html
+
+    def export_html(self, file_path, html_content):
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
         return True

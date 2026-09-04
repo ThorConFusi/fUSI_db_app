@@ -88,7 +88,6 @@ class MainWindow(ctk.CTk):
         self.kill_tab = KillAnimalTab(
             master=kill_frame,
             mouse_service=self.mouse_service,
-            rspace_service=self.rspace_service,
             today_and_before=self.today_and_before
         )
         self.kill_tab.pack(fill="both", expand=True)
