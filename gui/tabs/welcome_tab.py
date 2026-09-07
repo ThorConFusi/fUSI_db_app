@@ -94,4 +94,3 @@ class WelcomeTab(ctk.CTkFrame):
         # Activate checkboxes in all upload tabs
         self.main_window.add_animal_tab.update_rspace_state()
         self.main_window.add_session_tab.update_rspace_state()
-        self.main_window.kill_tab.update_rspace_state()
