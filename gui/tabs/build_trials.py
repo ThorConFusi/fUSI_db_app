@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog, messagebox
 from gui.dialogs import StimuliEditPopup
 from services.export_service import StimuliExportService
+from services.stimuli_formatter import StimuliFormatter
 
 
 class StimuliTab(ctk.CTkFrame):
@@ -163,47 +164,34 @@ class StimuliTab(ctk.CTkFrame):
         )
 
     def _add_line_to_tree(self, data):
-        def fmt(v):
-            if isinstance(v, bool):
-                return "True" if v else ""
-            if isinstance(v, str) and ("/" in v or "\\" in v):
-                return os.path.basename(v)
-            return v
+        row = [
+            data["pause"],
+            data["visual_stim"],
+            data["acoustic_stim"],
+            data["whisker_stim"],
+            data["odour_stim"],
+            data["air_puff"],
+            data["duration_ms"]
+        ]
 
-        self.tree.insert(
-            "",
-            "end",
-            values=(
-                fmt(data["pause"]),
-                fmt(data["visual_stim"]),
-                fmt(data["acoustic_stim"]),
-                fmt(data["whisker_stim"]),
-                fmt(data["odour_stim"]),
-                fmt(data["air_puff"]),
-                fmt(data["duration_ms"])
-            )
-        )
+        cleaned = StimuliFormatter.clean_row_for_tree(row)
+
+        self.tree.insert("", "end", values=tuple(cleaned))
 
     def _update_line_in_tree(self, item_id, data):
-        def fmt(v):
-            if isinstance(v, bool):
-                return "True" if v else ""
-            if isinstance(v, str) and ("/" in v or "\\" in v):
-                return os.path.basename(v)
-            return v
+        row = [
+            data["pause"],
+            data["visual_stim"],
+            data["acoustic_stim"],
+            data["whisker_stim"],
+            data["odour_stim"],
+            data["air_puff"],
+            data["duration_ms"]
+        ]
 
-        self.tree.item(
-            item_id,
-            values=(
-                fmt(data["pause"]),
-                fmt(data["visual_stim"]),
-                fmt(data["acoustic_stim"]),
-                fmt(data["whisker_stim"]),
-                fmt(data["odour_stim"]),
-                fmt(data["air_puff"]),
-                fmt(data["duration_ms"])
-            )
-        )
+        cleaned = StimuliFormatter.clean_row_for_tree(row)
+
+        self.tree.item(item_id, values=tuple(cleaned))
 
     def _delete_line(self):
         selected = self.tree.focus()
@@ -265,20 +253,7 @@ class StimuliTab(ctk.CTkFrame):
 
         # Einfügen in Treeview
         for row in rows:
-            cleaned = []
-            for v in row:
-                # False → leer
-                if v == "False":
-                    cleaned.append("")
-                    continue
-
-                # Filenamen extrahieren
-                if isinstance(v, str) and ("/" in v or "\\" in v):
-                    cleaned.append(os.path.basename(v))
-                    continue
-
-                cleaned.append(v)
-
+            cleaned = StimuliFormatter.clean_row_for_tree(row)
             self.tree.insert("", "end", values=tuple(cleaned))
 
         messagebox.showinfo("CSV geladen", f"Trial erfolgreich geladen:\n{file_path}")

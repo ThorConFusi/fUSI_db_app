@@ -1,6 +1,12 @@
 import customtkinter as ctk
 import params
 from tkinter import filedialog, messagebox
+from services.validators import (
+    validate_bool,
+    validate_file,
+    validate_duration,
+    ValidationError
+)
 
 
 class SessionDetailsPopup(ctk.CTkToplevel):
@@ -274,138 +280,138 @@ class ExportPopup(ctk.CTkToplevel):
 
 
 class StimuliEditPopup(ctk.CTkToplevel):
-    def __init__(self, master, initial_values=None, on_submit=None):
+    def __init__(self, master, initial_values, on_submit):
         super().__init__(master)
         self.title("Edit Stimuli Line")
         self.geometry("450x500")
-        self.grab_set()
+        self.resizable(False, False)
 
+        self.initial = initial_values
         self.on_submit = on_submit
-        self.initial = initial_values or {}
 
-        # -------------------------
-        # Widgets
-        # -------------------------
+        self._build_ui()
+        self._apply_pause_state()   # direkt anwenden
+
+    # ---------------------------------------------------------
+    # UI
+    # ---------------------------------------------------------
+    def _build_ui(self):
+        self.columnconfigure(0, weight=1)
+
         # Pause
-        self.pause_var = ctk.BooleanVar(value=self.initial.get("pause", True))
-        self.pause_cb = ctk.CTkCheckBox(self, text="Pause", variable=self.pause_var,
-                                        command=self._update_state)
-        self.pause_cb.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.chk_pause = ctk.CTkCheckBox(self, text="Pause", command=self._apply_pause_state)
+        self.chk_pause.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
+        self.chk_pause.select() if self.initial.get("pause") else self.chk_pause.deselect()
 
-        # Visual Stim (PNG)
-        ctk.CTkLabel(self, text="Visual Stim (.png):").grid(row=1, column=0, sticky="w", padx=10)
-        self.visual_entry = ctk.CTkEntry(self, width=250)
-        self.visual_entry.grid(row=2, column=0, padx=10, sticky="w")
-        self.visual_entry.insert(0, self.initial.get("visual_stim", ""))
+        # Visual Stim
+        frame_visual = ctk.CTkFrame(self)
+        frame_visual.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+        frame_visual.columnconfigure(0, weight=1)
 
-        self.visual_btn = ctk.CTkButton(self, text="Browse", command=self._browse_visual)
-        self.visual_btn.grid(row=2, column=1, padx=10)
+        self.ent_visual = ctk.CTkEntry(frame_visual, placeholder_text="Visual Stim (*.png)")
+        self.ent_visual.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+        self.ent_visual.insert(0, self.initial.get("visual_stim", ""))
 
-        # Acoustic Stim (.wav)
-        ctk.CTkLabel(self, text="Acoustic Stim (.wav):").grid(row=3, column=0, sticky="w", padx=10)
-        self.acoustic_entry = ctk.CTkEntry(self, width=250)
-        self.acoustic_entry.grid(row=4, column=0, padx=10, sticky="w")
-        self.acoustic_entry.insert(0, self.initial.get("acoustic_stim", ""))
+        self.btn_visual = ctk.CTkButton(frame_visual, text="Browse", width=80,
+                                        command=lambda: self._choose_file(self.ent_visual, "png"))
+        self.btn_visual.grid(row=0, column=1)
 
-        self.acoustic_btn = ctk.CTkButton(self, text="Browse", command=self._browse_acoustic)
-        self.acoustic_btn.grid(row=4, column=1, padx=10)
+        # Acoustic Stim
+        frame_acoustic = ctk.CTkFrame(self)
+        frame_acoustic.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+        frame_acoustic.columnconfigure(0, weight=1)
+
+        self.ent_acoustic = ctk.CTkEntry(frame_acoustic, placeholder_text="Acoustic Stim (*.wav)")
+        self.ent_acoustic.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+        self.ent_acoustic.insert(0, self.initial.get("acoustic_stim", ""))
+
+        self.btn_acoustic = ctk.CTkButton(frame_acoustic, text="Browse", width=80,
+                                          command=lambda: self._choose_file(self.ent_acoustic, "wav"))
+        self.btn_acoustic.grid(row=0, column=1)
 
         # Whisker Stim
-        self.whisker_var = ctk.BooleanVar(value=self.initial.get("whisker_stim", False))
-        self.whisker_cb = ctk.CTkCheckBox(self, text="Whisker Stim", variable=self.whisker_var)
-        self.whisker_cb.grid(row=5, column=0, padx=10, pady=10, sticky="w")
+        self.chk_whisker = ctk.CTkCheckBox(self, text="Whisker Stim")
+        self.chk_whisker.grid(row=3, column=0, padx=20, pady=10, sticky="w")
+        self.chk_whisker.select() if self.initial.get("whisker_stim") else self.chk_whisker.deselect()
 
         # Odour Stim
-        self.odour_var = ctk.BooleanVar(value=self.initial.get("odour_stim", False))
-        self.odour_cb = ctk.CTkCheckBox(self, text="Odour Stim", variable=self.odour_var)
-        self.odour_cb.grid(row=6, column=0, padx=10, pady=10, sticky="w")
+        self.chk_odour = ctk.CTkCheckBox(self, text="Odour Stim")
+        self.chk_odour.grid(row=4, column=0, padx=20, pady=10, sticky="w")
+        self.chk_odour.select() if self.initial.get("odour_stim") else self.chk_odour.deselect()
 
         # Air Puff
-        self.air_var = ctk.BooleanVar(value=self.initial.get("air_puff", False))
-        self.air_cb = ctk.CTkCheckBox(self, text="Air Puff", variable=self.air_var)
-        self.air_cb.grid(row=7, column=0, padx=10, pady=10, sticky="w")
+        self.chk_air = ctk.CTkCheckBox(self, text="Air Puff")
+        self.chk_air.grid(row=5, column=0, padx=20, pady=10, sticky="w")
+        self.chk_air.select() if self.initial.get("air_puff") else self.chk_air.deselect()
 
-        # Duration
-        ctk.CTkLabel(self, text="Duration (ms):").grid(row=8, column=0, sticky="w", padx=10)
-        self.duration_entry = ctk.CTkEntry(self, width=100)
-        self.duration_entry.grid(row=9, column=0, padx=10, sticky="w")
-        self.duration_entry.insert(0, self.initial.get("duration_ms", ""))
+        # Duration Label
+        self.lbl_duration = ctk.CTkLabel(self, text="Duration (ms)")
+        self.lbl_duration.grid(row=6, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        # Submit
-        submit_btn = ctk.CTkButton(self, text="Apply", command=self._submit)
-        submit_btn.grid(row=10, column=0, columnspan=2, pady=20)
+        # Duration Entry
+        self.ent_duration = ctk.CTkEntry(self)
+        self.ent_duration.grid(row=7, column=0, padx=20, pady=(0, 10), sticky="w")
+        self.ent_duration.insert(0, self.initial.get("duration_ms", ""))
 
-        self._update_state()
+        # Fußzeile für Fehlermeldungen
+        self.lbl_error = ctk.CTkLabel(self, text="", text_color="red")
+        self.lbl_error.grid(row=7, column=0, padx=20, pady=(5, 10), sticky="w")
 
-    # -------------------------
-    # File Browsers
-    # -------------------------
-    def _browse_visual(self):
-        path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
-        if path:
-            self.visual_entry.delete(0, "end")
-            self.visual_entry.insert(0, path)
+        # Save Button
+        self.btn_save = ctk.CTkButton(self, text="Save", command=self._validate_and_submit)
+        self.btn_save.grid(row=8, column=0, padx=20, pady=20)
 
-    def _browse_acoustic(self):
-        path = filedialog.askopenfilename(filetypes=[("WAV files", "*.wav")])
-        if path:
-            self.acoustic_entry.delete(0, "end")
-            self.acoustic_entry.insert(0, path)
+    # ---------------------------------------------------------
+    # File-Auswahl
+    # ---------------------------------------------------------
+    def _choose_file(self, entry_widget, ext):
+        file_path = filedialog.askopenfilename(
+            filetypes=[(f"{ext.upper()} files", f"*.{ext}")]
+        )
+        if file_path:
+            entry_widget.delete(0, "end")
+            entry_widget.insert(0, file_path)
 
-    # -------------------------
-    # Pause disables fields
-    # -------------------------
-    def _update_state(self):
-        pause = self.pause_var.get()
+    # ---------------------------------------------------------
+    # Pause-Logik
+    # ---------------------------------------------------------
+    def _apply_pause_state(self):
+        pause = self.chk_pause.get() == 1
 
+        # Wenn Pause aktiv → alle Stimuli-Felder deaktivieren
         state = "disabled" if pause else "normal"
 
-        # Disable all except duration
-        for widget in [
-            self.visual_entry, self.visual_btn,
-            self.acoustic_entry, self.acoustic_btn,
-            self.whisker_cb, self.odour_cb, self.air_cb
-        ]:
-            widget.configure(state=state)
+        self.ent_visual.configure(state=state)
+        self.btn_visual.configure(state=state)
 
-    # -------------------------
-    # Validation + Submit
-    # -------------------------
-    def _submit(self):
-        pause = self.pause_var.get()
-        duration = self.duration_entry.get().strip()
+        self.ent_acoustic.configure(state=state)
+        self.btn_acoustic.configure(state=state)
 
-        # Duration must be integer
-        if not duration.isdigit():
-            messagebox.showerror("Error", "Duration must be an integer.")
+        self.chk_whisker.configure(state=state)
+        self.chk_odour.configure(state=state)
+        self.chk_air.configure(state=state)
+
+        # Duration bleibt immer aktiv
+
+    # ---------------------------------------------------------
+    # Validierung + Submit
+    # ---------------------------------------------------------
+    def _validate_and_submit(self):
+        try:
+            data = {
+                "pause": validate_bool(self.chk_pause.get(), "pause"),
+                "visual_stim": validate_file(self.ent_visual.get(), "visual_stim"),
+                "acoustic_stim": validate_file(self.ent_acoustic.get(), "acoustic_stim"),
+                "whisker_stim": validate_bool(self.chk_whisker.get(), "whisker_stim"),
+                "odour_stim": validate_bool(self.chk_odour.get(), "odour_stim"),
+                "air_puff": validate_bool(self.chk_air.get(), "air_puff"),
+                "duration_ms": validate_duration(self.ent_duration.get())
+            }
+
+        except ValidationError as e:
+            self.lbl_error.configure(text=str(e))
             return
 
-        duration = int(duration)
-
-        # If pause=False → at least one stim must be set
-        if not pause:
-            stim_values = [
-                self.visual_entry.get().strip(),
-                self.acoustic_entry.get().strip(),
-                self.whisker_var.get(),
-                self.odour_var.get(),
-                self.air_var.get()
-            ]
-            if not any(stim_values):
-                messagebox.showerror("Error", "At least one stimulus must be set.")
-                return
-
-        result = {
-            "pause": pause,
-            "visual_stim": self.visual_entry.get().strip(),
-            "acoustic_stim": self.acoustic_entry.get().strip(),
-            "whisker_stim": self.whisker_var.get(),
-            "odour_stim": self.odour_var.get(),
-            "air_puff": self.air_var.get(),
-            "duration_ms": duration
-        }
-
-        if self.on_submit:
-            self.on_submit(result)
-
+        self.lbl_error.configure(text="")
+        self.on_submit(data)
         self.destroy()

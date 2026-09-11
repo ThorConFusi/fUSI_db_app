@@ -1,6 +1,7 @@
 import csv
 import os
 import datetime
+from services.stimuli_formatter import StimuliFormatter
 
 
 class SessionExportService:
@@ -107,21 +108,7 @@ class StimuliExportService:
                 # 2) Treeview-Daten schreiben
                 for item in tree.get_children():
                     row = list(tree.item(item, "values"))
-
-                    cleaned = []
-                    for v in row:
-                        # False → empty
-                        if v == "False":
-                            cleaned.append("")
-                            continue
-
-                        # Extract filenames
-                        if isinstance(v, str) and ("/" in v or "\\" in v):
-                            cleaned.append(os.path.basename(v))
-                            continue
-
-                        cleaned.append(v)
-
+                    cleaned = StimuliFormatter.clean_row_for_csv(row)
                     writer.writerow(cleaned)
 
             return True
