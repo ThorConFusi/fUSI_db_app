@@ -87,11 +87,12 @@ kill_method: list[str] = [
 mouse_sex: list[str] = ["Female", "Male"]
 
 # Headers of tabs in main window
-tab_title: tuple[str, str, str, str, str] = (
+tab_title: tuple[str, str, str, str, str, str] = (
     "add Animal",
     "add Session",
     "kill Animal",
     "Welcome",
-    "display Sessions"
+    "display Sessions",
+    "build Trials"
 )
 

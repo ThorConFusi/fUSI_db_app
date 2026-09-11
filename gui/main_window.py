@@ -7,6 +7,7 @@ from gui.tabs.add_animal_tab import AddAnimalTab
 from gui.tabs.add_session_tab import AddSessionTab
 from gui.tabs.kill_animal_tab import KillAnimalTab
 from gui.tabs.display_sessions_tab import DisplaySessionsTab
+from gui.tabs.build_trials import StimuliTab
 
 
 class MainWindow(ctk.CTk):
@@ -71,6 +72,13 @@ class MainWindow(ctk.CTk):
             today_and_before=self.today_and_before
         )
         self.add_animal_tab.pack(fill="both", expand=True)
+
+        # StimuliTab
+        stimuli_frame = self.tabview.add(params.tab_title[5])
+        self.stimuli_tab = StimuliTab(
+            master=stimuli_frame
+        )
+        self.stimuli_tab.pack(fill="both", expand=True)
 
         # Add Session
         add_session_frame = self.tabview.add(params.tab_title[1])

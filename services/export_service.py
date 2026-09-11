@@ -1,4 +1,5 @@
 import csv
+import os
 import datetime
 
 
@@ -90,3 +91,60 @@ class SacrificeExportService:
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(html_content)
         return True
+
+
+class StimuliExportService:
+    def export_stimuli_to_csv(self, file_path, tree, headings):
+        try:
+            # 1) Header: internal column names (Keys)
+            header = list(headings.keys())
+
+            with open(file_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f, delimiter=",")
+
+                writer.writerow(header)
+
+                # 2) Treeview-Daten schreiben
+                for item in tree.get_children():
+                    row = list(tree.item(item, "values"))
+
+                    cleaned = []
+                    for v in row:
+                        # False → empty
+                        if v == "False":
+                            cleaned.append("")
+                            continue
+
+                        # Extract filenames
+                        if isinstance(v, str) and ("/" in v or "\\" in v):
+                            cleaned.append(os.path.basename(v))
+                            continue
+
+                        cleaned.append(v)
+
+                    writer.writerow(cleaned)
+
+            return True
+
+        except Exception as e:
+            print("CSV-Export Fehler:", e)
+            return False
+
+    def load_stimuli_from_csv(self, file_path):
+        try:
+            rows = []
+
+            with open(file_path, "r", encoding="utf-8") as f:
+                reader = csv.reader(f, delimiter=",")
+
+                # Skip first line = Header
+                header = next(reader, None)
+
+                for row in reader:
+                    rows.append(row)
+
+            return rows
+
+        except Exception as e:
+            print("CSV-Ladefehler:", e)
+            return None
