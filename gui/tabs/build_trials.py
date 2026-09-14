@@ -193,10 +193,15 @@ class StimuliTab(ctk.CTkFrame):
         self._retag_all_rows()
 
     def _load_csv(self):
-        # Dateidialog
+        project_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..")
+        )
+        default_dir = os.path.join(project_root, "01_Protocol_Config_Files")
+
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV files", "*.csv")],
-            title="CSV laden"
+            title="CSV laden",
+            initialdir=default_dir
         )
 
         if not file_path:

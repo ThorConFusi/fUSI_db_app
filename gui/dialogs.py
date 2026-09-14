@@ -1,3 +1,5 @@
+import os
+
 import customtkinter as ctk
 import params
 from tkinter import filedialog, messagebox
@@ -314,7 +316,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
         self.ent_visual.insert(0, self.initial.get("visual_stim", ""))
 
         self.btn_visual = ctk.CTkButton(frame_visual, text="Browse", width=80,
-                                        command=lambda: self._choose_file(self.ent_visual, "png"))
+                                        command=lambda: self._choose_file(self.ent_visual, "png", "Images"))
         self.btn_visual.grid(row=0, column=1)
 
         # Acoustic Stim
@@ -327,7 +329,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
         self.ent_acoustic.insert(0, self.initial.get("acoustic_stim", ""))
 
         self.btn_acoustic = ctk.CTkButton(frame_acoustic, text="Browse", width=80,
-                                          command=lambda: self._choose_file(self.ent_acoustic, "wav"))
+                                          command=lambda: self._choose_file(self.ent_acoustic, "wav", "Sounds"))
         self.btn_acoustic.grid(row=0, column=1)
 
         # Whisker Stim
@@ -365,9 +367,16 @@ class StimuliEditPopup(ctk.CTkToplevel):
     # ---------------------------------------------------------
     # File selection
     # ---------------------------------------------------------
-    def _choose_file(self, entry_widget, ext):
+    def _choose_file(self, entry_widget, ext, dir_name):
+        project_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..")
+        )
+
+        default_dir = os.path.join(project_root, dir_name)
+
         file_path = filedialog.askopenfilename(
-            filetypes=[(f"{ext.upper()} files", f"*.{ext}")]
+            filetypes=[(f"{ext.upper()} files", f"*.{ext}")],
+            initialdir=default_dir,
         )
         if file_path:
             entry_widget.delete(0, "end")
