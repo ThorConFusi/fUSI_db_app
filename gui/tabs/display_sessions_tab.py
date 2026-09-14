@@ -172,6 +172,13 @@ class DisplaySessionsTab(ctk.CTkFrame):
             else:
                 self.tree.heading(c, text=base)
 
+        self._retag_all_rows()
+
+    def _retag_all_rows(self):
+        for i, item in enumerate(self.tree.get_children()):
+            tag = "odd" if i % 2 else "even"
+            self.tree.item(item, tags=(tag,))
+
     # ---------------------------------------------------------
     # Tree helpers
     # ---------------------------------------------------------
