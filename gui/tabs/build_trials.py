@@ -3,6 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from tkinter import filedialog, messagebox
 from gui.dialogs import StimuliEditPopup
+from gui.dialogs import StimuliTimelinePopup
 from services.export_service import StimuliExportService
 from services.stimuli_formatter import StimuliFormatter
 
@@ -22,19 +23,22 @@ class StimuliTab(ctk.CTkFrame):
     def _build_ui(self):
         # --- Erste Reihe: fünf Buttons ---
         self.btn_load = ctk.CTkButton(self, text="Load trial", command=self._load_csv)
-        self.btn_load.grid(row=0, column=0, padx=10, pady=10)
+        self.btn_load.grid(row=0, column=0, padx=10)#, pady=10)
 
         self.btn_new = ctk.CTkButton(self, text="New line", command=self._new_line)
-        self.btn_new.grid(row=0, column=1, padx=10, pady=10)
+        self.btn_new.grid(row=0, column=1, padx=10)#, pady=10)
 
         self.btn_edit = ctk.CTkButton(self, text="Edit line", command=self._edit_line)
-        self.btn_edit.grid(row=0, column=2, padx=10, pady=10)
+        self.btn_edit.grid(row=0, column=2, padx=10)#, pady=10)
 
         self.btn_delete = ctk.CTkButton(self, text="Delete line", command=self._delete_line)
-        self.btn_delete.grid(row=0, column=3, padx=10, pady=10)
+        self.btn_delete.grid(row=0, column=3, padx=10)#, pady=10)
+
+        self.btn_preview = ctk.CTkButton(self, text="Preview", command=self._preview_timeline)
+        self.btn_preview.grid(row=0, column=4, padx=10)#, pady=10)
 
         self.btn_save = ctk.CTkButton(self, text="Save trial", command=self._export_csv)
-        self.btn_save.grid(row=0, column=4, padx=10, pady=10)
+        self.btn_save.grid(row=0, column=5, padx=10)#, pady=10)
 
         # --- Treeview mit 7 Spalten ---
         columns = (
@@ -48,7 +52,7 @@ class StimuliTab(ctk.CTkFrame):
         )
 
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
-        self.tree.grid(row=1, column=0, columnspan=5, sticky="nsew", padx=10, pady=10)
+        self.tree.grid(row=1, column=0, columnspan=6, sticky="nsew", padx=10, pady=10)
 
         # Spalten-Header definieren
         self._headings = {
@@ -62,17 +66,17 @@ class StimuliTab(ctk.CTkFrame):
         }
 
         for col, text in self._headings.items():
-            self.tree.heading(col, text=text, command=lambda c=col: self._sort_by_column(c))
+            self.tree.heading(col, text=text)
             self.tree.column(col, anchor="center", stretch=True, width=1)
 
         # Scrollbar
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        scrollbar.grid(row=1, column=5, sticky="ns")
+        scrollbar.grid(row=1, column=6, sticky="ns")
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         # Layout
         self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
     # ---------------------------------------------------------
     # Styling
@@ -97,40 +101,14 @@ class StimuliTab(ctk.CTkFrame):
         self.tree.tag_configure("odd", background="#dadada")
         self.tree.tag_configure("even", background="white")
 
+    def _retag_all_rows(self):
+        for i, item in enumerate(self.tree.get_children()):
+            tag = "odd" if i % 2 else "even"
+            self.tree.item(item, tags=(tag,))
+
     # ---------------------------------------------------------
-    # Sorting (unverändert übernommen)
+    # Input
     # ---------------------------------------------------------
-    def _convert_for_sort(self, value):
-        if value is None:
-            return ""
-        try:
-            return float(value)
-        except:
-            return value.lower()
-
-    def _sort_by_column(self, col):
-        data = []
-        for item in self.tree.get_children(""):
-            raw = self.tree.set(item, col)
-            key = self._convert_for_sort(raw)
-            data.append((key, item))
-
-        reverse = self._sort_state.get(col, False)
-        self._sort_state[col] = not reverse
-
-        data.sort(reverse=reverse)
-
-        for index, (_, item) in enumerate(data):
-            self.tree.move(item, "", index)
-
-        for c in self.tree["columns"]:
-            base = self._headings[c]
-            if c == col:
-                arrow = "▲" if not reverse else "▼"
-                self.tree.heading(c, text=f"{base}   {arrow}")
-            else:
-                self.tree.heading(c, text=base)
-
     def _new_line(self):
         popup = StimuliEditPopup(
             master=self,
@@ -176,7 +154,10 @@ class StimuliTab(ctk.CTkFrame):
 
         cleaned = StimuliFormatter.clean_row_for_tree(row)
 
-        self.tree.insert("", "end", values=tuple(cleaned))
+        index = len(self.tree.get_children())
+        tag = "odd" if index % 2 else "even"
+
+        self.tree.insert("", "end", values=tuple(cleaned), tags=(tag,))
 
     def _update_line_in_tree(self, item_id, data):
         row = [
@@ -196,11 +177,63 @@ class StimuliTab(ctk.CTkFrame):
     def _delete_line(self):
         selected = self.tree.focus()
         if not selected:
-            # Optional:
-            # messagebox.showinfo("Info", "Bitte eine Zeile auswählen.")
             return
 
         self.tree.delete(selected)
+        self._retag_all_rows()
+
+    def _load_csv(self):
+        # Dateidialog
+        file_path = filedialog.askopenfilename(
+            filetypes=[("CSV files", "*.csv")],
+            title="CSV laden"
+        )
+
+        if not file_path:
+            return
+
+        # Treeview leeren
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # CSV laden
+        rows = self.export_service.load_stimuli_from_csv(file_path)
+
+        if rows is None:
+            messagebox.showerror("Fehler", "CSV konnte nicht geladen werden.")
+            return
+
+        # Einfügen in Treeview
+        for row in rows:
+            cleaned = StimuliFormatter.clean_row_for_tree(row)
+            self.tree.insert("", "end", values=tuple(cleaned))
+
+        self._retag_all_rows()
+
+        messagebox.showinfo("CSV geladen", f"Trial erfolgreich geladen:\n{file_path}")
+
+    # ---------------------------------------------------------
+    # Output
+    # ---------------------------------------------------------
+    def _preview_timeline(self):
+        rows = []
+
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+
+            row = {
+                "pause": values[0] == "True",
+                "visual_stim": values[1],
+                "acoustic_stim": values[2],
+                "whisker_stim": values[3] == "True",
+                "odour_stim": values[4] == "True",
+                "air_puff": values[5] == "True",
+                "duration_ms": values[6]
+            }
+
+            rows.append(row)
+
+        StimuliTimelinePopup(self, rows)
 
     def _export_csv(self):
         project_root = os.path.abspath(
@@ -230,30 +263,3 @@ class StimuliTab(ctk.CTkFrame):
         else:
             messagebox.showerror("Fehler", "Export fehlgeschlagen.")
 
-    def _load_csv(self):
-        # Dateidialog
-        file_path = filedialog.askopenfilename(
-            filetypes=[("CSV files", "*.csv")],
-            title="CSV laden"
-        )
-
-        if not file_path:
-            return
-
-        # Treeview leeren
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-
-        # CSV laden
-        rows = self.export_service.load_stimuli_from_csv(file_path)
-
-        if rows is None:
-            messagebox.showerror("Fehler", "CSV konnte nicht geladen werden.")
-            return
-
-        # Einfügen in Treeview
-        for row in rows:
-            cleaned = StimuliFormatter.clean_row_for_tree(row)
-            self.tree.insert("", "end", values=tuple(cleaned))
-
-        messagebox.showinfo("CSV geladen", f"Trial erfolgreich geladen:\n{file_path}")

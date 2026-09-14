@@ -285,6 +285,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
         self.title("Edit Stimuli Line")
         self.geometry("450x500")
         self.resizable(False, False)
+        self.grab_set()
 
         self.initial = initial_values
         self.on_submit = on_submit
@@ -362,7 +363,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
         self.btn_save.grid(row=8, column=0, padx=20, pady=20)
 
     # ---------------------------------------------------------
-    # File-Auswahl
+    # File selection
     # ---------------------------------------------------------
     def _choose_file(self, entry_widget, ext):
         file_path = filedialog.askopenfilename(
@@ -373,7 +374,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
             entry_widget.insert(0, file_path)
 
     # ---------------------------------------------------------
-    # Pause-Logik
+    # Pause logic
     # ---------------------------------------------------------
     def _apply_pause_state(self):
         pause = self.chk_pause.get() == 1
@@ -394,7 +395,7 @@ class StimuliEditPopup(ctk.CTkToplevel):
         # Duration bleibt immer aktiv
 
     # ---------------------------------------------------------
-    # Validierung + Submit
+    # Validation + submit
     # ---------------------------------------------------------
     def _validate_and_submit(self):
         try:
@@ -415,3 +416,120 @@ class StimuliEditPopup(ctk.CTkToplevel):
         self.lbl_error.configure(text="")
         self.on_submit(data)
         self.destroy()
+
+
+class StimuliTimelinePopup(ctk.CTkToplevel):
+    def __init__(self, master, rows):
+        super().__init__(master)
+        self.title("Timeline Preview")
+        self.grab_set()
+
+        # --- Calculate duration ---
+        self.rows = rows
+        self.total_duration = sum(int(r["duration_ms"]) for r in rows)
+
+        # --- Identify tracks ---
+        self.used_tracks = self._get_used_tracks(rows)
+
+        # --- Dynamic Scaling ---
+        self.left_margin = 150
+        self.right_margin = 50
+
+        self.scale = max(0.2, (900 - self.left_margin - self.right_margin) / self.total_duration)
+
+        # Dynamic window width
+        width = int(self.left_margin + self.total_duration * self.scale + self.right_margin)
+        height = 80 + len(self.used_tracks) * 20
+
+        self.geometry(f"{width}x{height}")
+
+        # Canvas
+        self.canvas = ctk.CTkCanvas(self, bg="white")
+        self.canvas.pack(fill="both", expand=True)
+
+        # Draw
+        self._draw_time_axis()
+        self._draw_tracks()
+
+    # ---------------------------------------------------------
+    # Get used stimuli
+    # ---------------------------------------------------------
+    def _get_used_tracks(self, rows):
+        used = set()
+        for row in rows:
+            if row["pause"]:
+                used.add("pause")
+            for stim in ["visual_stim", "acoustic_stim", "whisker_stim", "odour_stim", "air_puff"]:
+                if row[stim] not in ("", False, None):
+                    used.add(stim)
+        return list(used)
+
+    # ---------------------------------------------------------
+    # Time axis w/ ticks at stimulus onset
+    # ---------------------------------------------------------
+    def _draw_time_axis(self):
+        scale = self.scale
+        left = self.left_margin
+
+        self.canvas.create_line(
+            left,
+            30,
+            left + self.total_duration * scale,
+            30,
+            width=2
+        )
+
+        start_times = []
+        t = 0
+        for row in self.rows:
+            start_times.append(t)
+            t += int(row["duration_ms"])
+
+        for t in start_times:
+            x = left + t * scale
+            self.canvas.create_line(x, 25, x, 35, width=1)
+            self.canvas.create_text(x, 15, text=f"{t} ms")
+
+    # ---------------------------------------------------------
+    # Draw tracks
+    # ---------------------------------------------------------
+    def _draw_tracks(self):
+        colors = {
+            "pause": "#aaaaaa",
+            "visual_stim": "#3377c8",
+            "acoustic_stim": "#55aa55",
+            "whisker_stim": "#aa5533",
+            "odour_stim": "#aa33aa",
+            "air_puff": "#ffaa00"
+        }
+
+        scale = self.scale
+        y = 60
+
+        for track in self.used_tracks:
+            # Track-Label
+            self.canvas.create_text(10, y, anchor="w",
+                                    text=track.replace("_", " ").capitalize())
+
+            x = self.left_margin
+
+            for row in self.rows:
+                duration = int(row["duration_ms"])
+                width_px = duration * scale
+
+                active = False
+                if track == "pause" and row["pause"]:
+                    active = True
+                elif track != "pause":
+                    if row[track] not in ("", False, None):
+                        active = True
+
+                if active:
+                    self.canvas.create_rectangle(
+                        x, y - 10, x + width_px, y + 10,
+                        fill=colors[track], outline=""
+                    )
+
+                x += width_px
+
+            y += 20

@@ -73,6 +73,15 @@ class MainWindow(ctk.CTk):
         )
         self.add_animal_tab.pack(fill="both", expand=True)
 
+        # Kill Animal
+        kill_frame = self.tabview.add(params.tab_title[2])
+        self.kill_tab = KillAnimalTab(
+            master=kill_frame,
+            mouse_service=self.mouse_service,
+            today_and_before=self.today_and_before
+        )
+        self.kill_tab.pack(fill="both", expand=True)
+
         # StimuliTab
         stimuli_frame = self.tabview.add(params.tab_title[5])
         self.stimuli_tab = StimuliTab(
@@ -90,15 +99,6 @@ class MainWindow(ctk.CTk):
             today_and_before=self.today_and_before
         )
         self.add_session_tab.pack(fill="both", expand=True)
-
-        # Kill Animal
-        kill_frame = self.tabview.add(params.tab_title[2])
-        self.kill_tab = KillAnimalTab(
-            master=kill_frame,
-            mouse_service=self.mouse_service,
-            today_and_before=self.today_and_before
-        )
-        self.kill_tab.pack(fill="both", expand=True)
 
         # Display Sessions
         display_frame = self.tabview.add(params.tab_title[4])
