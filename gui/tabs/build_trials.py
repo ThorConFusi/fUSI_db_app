@@ -22,19 +22,29 @@ class StimuliTab(ctk.CTkFrame):
     # ---------------------------------------------------------
     def _build_ui(self):
         # --- Erste Reihe: fünf Buttons ---
-        self.btn_load = ctk.CTkButton(self, text="Load trial", command=self._load_csv)
+        self.btn_load = ctk.CTkButton(self, fg_color="white", border_width=2, border_color="#999999",
+                                      hover_color="#999999", text="Load trial", text_color="black",
+                                      command=self._load_csv)
         self.btn_load.grid(row=0, column=0, padx=10)#, pady=10)
 
-        self.btn_new = ctk.CTkButton(self, text="New line", command=self._new_line)
+        self.btn_new = ctk.CTkButton(self, fg_color="white", border_width=2, border_color="#999999",
+                                      hover_color="#999999", text="New line", text_color="black",
+                                     command=self._new_line)
         self.btn_new.grid(row=0, column=1, padx=10)#, pady=10)
 
-        self.btn_edit = ctk.CTkButton(self, text="Edit line", command=self._edit_line)
+        self.btn_edit = ctk.CTkButton(self, fg_color="white", border_width=2, border_color="#999999",
+                                      hover_color="#999999", text="Edit line", text_color="black",
+                                      command=self._edit_line)
         self.btn_edit.grid(row=0, column=2, padx=10)#, pady=10)
 
-        self.btn_delete = ctk.CTkButton(self, text="Delete line", command=self._delete_line)
+        self.btn_delete = ctk.CTkButton(self, fg_color="white", border_width=2, border_color="#999999",
+                                      hover_color="#999999", text="Delete line", text_color="black",
+                                        command=self._delete_line)
         self.btn_delete.grid(row=0, column=3, padx=10)#, pady=10)
 
-        self.btn_preview = ctk.CTkButton(self, text="Preview", command=self._preview_timeline)
+        self.btn_preview = ctk.CTkButton(self, fg_color="white", border_width=2, border_color="#999999",
+                                      hover_color="#999999", text="Preview", text_color="black",
+                                         command=self._preview_timeline)
         self.btn_preview.grid(row=0, column=4, padx=10)#, pady=10)
 
         self.btn_save = ctk.CTkButton(self, text="Save trial", command=self._export_csv)

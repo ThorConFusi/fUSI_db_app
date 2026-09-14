@@ -37,9 +37,9 @@ class AddSessionTab(BaseTab):
         self.pyrat_option.grid(row=0, column=1, padx=(10, 40))
 
         # Session date
-        ctk.CTkLabel(self, text="Session date:", anchor="e", width=100).grid(row=1, column=0)
+        ctk.CTkLabel(self, text="Session date:", anchor="e", width=100).grid(row=0, column=2)
         self.sess_date_combo = ctk.CTkComboBox(self, values=self.today_and_before)
-        self.sess_date_combo.grid(row=1, column=1, padx=(10, 40), pady=2)
+        self.sess_date_combo.grid(row=0, column=3, padx=(10, 40), pady=2)
 
         # Session time
         ctk.CTkLabel(self, text="Session Time:", anchor="e", width=100).grid(row=1, column=2)
@@ -47,14 +47,28 @@ class AddSessionTab(BaseTab):
         self.sess_time_entry.grid(row=1, column=3, padx=(10, 40), pady=2)
 
         # Experiment
-        ctk.CTkLabel(self, text="Experiment:", anchor="e", width=100).grid(row=2, column=0)
+        ctk.CTkLabel(self, text="Experiment:", anchor="e", width=100).grid(row=1, column=0)
         self.exp_combo = ctk.CTkComboBox(self, values=params.experiment_name)
-        self.exp_combo.grid(row=2, column=1, padx=(10, 40))
+        self.exp_combo.grid(row=1, column=1, padx=(10, 40))
 
         # Session type
-        ctk.CTkLabel(self, text="Session:", anchor="e", width=100).grid(row=2, column=2)
+        ctk.CTkLabel(self, text="Session:", anchor="e", width=100).grid(row=2, column=0)
         self.session_combo = ctk.CTkComboBox(self, values=params.session_name)
-        self.session_combo.grid(row=2, column=3, padx=(10, 40))
+        self.session_combo.grid(row=2, column=1, padx=(10, 40))
+
+        # Start recording GUI
+        self.rec_button = ctk.CTkButton(
+            self,
+            text="Start fUSI recording GUI",
+            text_color="darkred",
+            width=215,
+            fg_color = "white",
+            border_width = 4,
+            border_color = "darkred",
+            hover_color = "#dadada",
+            #command=self._on_submit
+        )
+        self.rec_button.grid(row=2, column=2, columnspan=2)
 
         # Recording session number
         self.rec_label = ctk.CTkLabel(
