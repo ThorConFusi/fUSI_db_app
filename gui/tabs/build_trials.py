@@ -50,7 +50,7 @@ class StimuliTab(ctk.CTkFrame):
         self.btn_save = ctk.CTkButton(self, text="Save trial", command=self._export_csv)
         self.btn_save.grid(row=0, column=5, padx=10)#, pady=10)
 
-        # --- Treeview mit 7 Spalten ---
+        # Treeview with 7 columns
         columns = (
             "pause",
             "visual_stim",
@@ -64,7 +64,7 @@ class StimuliTab(ctk.CTkFrame):
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
         self.tree.grid(row=1, column=0, columnspan=6, sticky="nsew", padx=10, pady=10)
 
-        # Spalten-Header definieren
+        # Define column headers
         self._headings = {
             "pause": "Pause",
             "visual_stim": "Visual Stim",
@@ -122,18 +122,18 @@ class StimuliTab(ctk.CTkFrame):
     def _new_line(self):
         popup = StimuliEditPopup(
             master=self,
-            initial_values={},   # später kannst du hier Treeview-Werte übergeben
+            initial_values={},   # if ever applicable
             on_submit=self._add_line_to_tree
         )
 
     def _edit_line(self):
         selected = self.tree.focus()
         if not selected:
-            return  # oder messagebox.showinfo("Info", "Bitte eine Zeile auswählen.")
+            return  # or messagebox.showinfo("Info", "Please chose a row.")
 
         values = self.tree.item(selected, "values")
 
-        # Werte in dict umwandeln
+        # Values to dict
         initial = {
             "pause": values[0] == "True",
             "visual_stim": values[1],
@@ -144,7 +144,7 @@ class StimuliTab(ctk.CTkFrame):
             "duration_ms": values[6]
         }
 
-        # Popup öffnen
+        # Open popup
         StimuliEditPopup(
             master=self,
             initial_values=initial,
@@ -200,7 +200,7 @@ class StimuliTab(ctk.CTkFrame):
 
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV files", "*.csv")],
-            title="CSV laden",
+            title="Load CSV",
             initialdir=default_dir
         )
 
@@ -215,7 +215,7 @@ class StimuliTab(ctk.CTkFrame):
         rows = self.export_service.load_stimuli_from_csv(file_path)
 
         if rows is None:
-            messagebox.showerror("Fehler", "CSV konnte nicht geladen werden.")
+            messagebox.showerror("Error", "Unable to load CSV.")
             return
 
         # Einfügen in Treeview
@@ -225,7 +225,7 @@ class StimuliTab(ctk.CTkFrame):
 
         self._retag_all_rows()
 
-        messagebox.showinfo("CSV geladen", f"Trial erfolgreich geladen:\n{file_path}")
+        messagebox.showinfo("CSV loaded", f"Trial loaded successfully:\n{file_path}")
 
     # ---------------------------------------------------------
     # Output
@@ -274,7 +274,7 @@ class StimuliTab(ctk.CTkFrame):
         )
 
         if ok:
-            messagebox.showinfo("Export erfolgreich", f"CSV gespeichert:\n{file_path}")
+            messagebox.showinfo("Export successful", f"CSV saved:\n{file_path}")
         else:
-            messagebox.showerror("Fehler", "Export fehlgeschlagen.")
+            messagebox.showerror("Error", "Export failed.")
 

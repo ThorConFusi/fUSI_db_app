@@ -2,11 +2,11 @@ import os
 
 class StimuliFormatter:
     """
-    Zentrale Utility-Klasse für alle Stimuli-Formatierungen:
-    - Booleans für Treeview
-    - Booleans für CSV
-    - Filenamen extrahieren
-    - Werte aus CSV zurück in Treeview-Format
+    Central utility class for all stimuli formats:
+    - Booleans for treeview
+    - Booleans for CSV
+    - Extract file names
+    - Values from CSV back into treeview format
     """
 
     @staticmethod
@@ -36,7 +36,7 @@ class StimuliFormatter:
     @staticmethod
     def filename_only(v):
         """
-        Extrahiert Filenamen aus Pfaden.
+        Extracts filenames from paths
         """
         if isinstance(v, str) and ("/" in v or "\\" in v):
             return os.path.basename(v)
@@ -45,9 +45,9 @@ class StimuliFormatter:
     @staticmethod
     def clean_for_tree(v):
         """
-        Kombiniert alle Treeview-Regeln:
+        Combines all treeview rules:
         - False → ""
-        - Pfade → Filenamen
+        - Paths → Filenames
         """
         v = StimuliFormatter.bool_to_tree(v)
         v = StimuliFormatter.filename_only(v)
@@ -56,9 +56,9 @@ class StimuliFormatter:
     @staticmethod
     def clean_for_csv(v):
         """
-        Kombiniert alle CSV-Regeln:
+        Combines all CSV rules:
         - False → ""
-        - Pfade → Filenamen
+        - Paths → Filenames
         """
         v = StimuliFormatter.bool_to_csv(v)
         v = StimuliFormatter.filename_only(v)
@@ -67,13 +67,13 @@ class StimuliFormatter:
     @staticmethod
     def clean_row_for_tree(row):
         """
-        Wendet clean_for_tree auf eine komplette Zeile an.
+        Applies clean_for_tree to a complete row.
         """
         return [StimuliFormatter.clean_for_tree(v) for v in row]
 
     @staticmethod
     def clean_row_for_csv(row):
         """
-        Wendet clean_for_csv auf eine komplette Zeile an.
+        Applies clean_for_csv to a complete row.
         """
         return [StimuliFormatter.clean_for_csv(v) for v in row]
