@@ -162,23 +162,22 @@ class AddSessionTab(BaseTab):
         pyrat_id = self.pyrat_option.get()
         experiment = self.exp_combo.get()
         session = self.session_combo.get()
-        sess_num = self.session_service.get_next_session_number_safe(pyrat_id)
-        sess_date = self.sess_date_combo.get()
-        sess_time = self.sess_time_entry.get()
 
-        if pyrat_id == "none available":
-            self.rec_label.configure(text="No valid session data")
-            return
-
-        ok, exp_sess, err = self.session_service.update_json_to_recent_session(
-            pyrat_id, sess_num, experiment, session
-        )
+        ok, next_num, err = self.session_service.get_next_session_number_safe(pyrat_id)
 
         if not ok:
             self.show_error(err)
             return
 
-        self.show_success(f"Ready for session {sess_num} {pyrat_id}.")
+        if pyrat_id == "none available":
+            self.rec_label.configure(text="No valid session data")
+            return
+
+        self.export_service.update_json_to_recent_session(
+            pyrat_id, str(next_num), experiment, session
+        )
+
+        self.show_success(f"Ready for session {next_num} of animal {pyrat_id}.")
 
     # ---------------------------------------------------------
     # Submit session

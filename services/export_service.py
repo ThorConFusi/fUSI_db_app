@@ -72,8 +72,6 @@ class SessionExportService:
             with open("iEECR_fUSI_Stim/last_config.json", "w") as f:
                 json.dump(config, f, indent=2)
 
-        return True, exp_sess, None
-
 
     def export_treeview_to_csv(self, file_path: str, tree: str, mouse_filter: str, exp_filter: str, headings: dict):
         """
