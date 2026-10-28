@@ -11,11 +11,12 @@ from gui.tabs.build_trials import StimuliTab
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, mouse_service, session_service, rspace_service, db):
+    def __init__(self, mouse_service, session_service, export_service, rspace_service, db):
         super().__init__()
 
         self.mouse_service = mouse_service
         self.session_service = session_service
+        self.export_service = export_service
         self.rspace_service = rspace_service
         self.db = db
 
@@ -95,6 +96,7 @@ class MainWindow(ctk.CTk):
             master=add_session_frame,
             mouse_service=self.mouse_service,
             session_service=self.session_service,
+            export_service=self.export_service,
             rspace_service=self.rspace_service,
             today_and_before=self.today_and_before
         )

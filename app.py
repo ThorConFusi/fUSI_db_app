@@ -9,6 +9,7 @@ from database.repositories.session_repo import SessionRepository
 from services.rspace_service import RSpaceService
 from services.mouse_service import MouseService
 from services.session_service import SessionService
+from services.export_service import SessionExportService
 
 from gui.main_window import MainWindow
 
@@ -26,11 +27,13 @@ def main():
     rspace_service = RSpaceService(login_repo, mouse_repo, session_repo)
     mouse_service = MouseService(mouse_repo)
     session_service = SessionService(session_repo)
+    export_service = SessionExportService()
 
     # GUI
     app = MainWindow(
         mouse_service=mouse_service,
         session_service=session_service,
+        export_service=export_service,
         rspace_service=rspace_service,
         db=db
     )

@@ -2,13 +2,15 @@ import customtkinter as ctk
 from gui.base_tab import BaseTab
 import params
 from gui.dialogs import ExportPopup
+from params import session_name
 
 
 class AddSessionTab(BaseTab):
-    def __init__(self, master, mouse_service, session_service, rspace_service, today_and_before):
+    def __init__(self, master, mouse_service, session_service, export_service, rspace_service, today_and_before):
         super().__init__(master)
         self.mouse_service = mouse_service
         self.session_service = session_service
+        self.export_service = export_service
         self.rspace_service = rspace_service
         self.rspace_client = None
         self.today_and_before = today_and_before
@@ -66,7 +68,7 @@ class AddSessionTab(BaseTab):
             border_width = 4,
             border_color = "darkred",
             hover_color = "#dadada",
-            #command=self._on_submit
+            command=self._start_session
         )
         self.rec_button.grid(row=2, column=2, columnspan=2)
 
@@ -152,6 +154,31 @@ class AddSessionTab(BaseTab):
             return
 
         self.rec_label.configure(text=f"fUS recording\nsession no. {next_num}")
+
+    # ---------------------------------------------------------
+    # Start session (by opening stimulation GUI)
+    # ---------------------------------------------------------
+    def _start_session(self):
+        pyrat_id = self.pyrat_option.get()
+        experiment = self.exp_combo.get()
+        session = self.session_combo.get()
+        sess_num = self.session_service.get_next_session_number_safe(pyrat_id)
+        sess_date = self.sess_date_combo.get()
+        sess_time = self.sess_time_entry.get()
+
+        if pyrat_id == "none available":
+            self.rec_label.configure(text="No valid session data")
+            return
+
+        ok, exp_sess, err = self.session_service.update_json_to_recent_session(
+            pyrat_id, sess_num, experiment, session
+        )
+
+        if not ok:
+            self.show_error(err)
+            return
+
+        self.show_success(f"Ready for session {sess_num} {pyrat_id}.")
 
     # ---------------------------------------------------------
     # Submit session
