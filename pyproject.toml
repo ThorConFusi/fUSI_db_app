@@ -1,0 +1,43 @@
+[project]
+name = "fusi-db-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "ThorConFusi", email = "topitz@uni-bonn.de" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "colorama>=0.4.6",
+    "customtkinter>=6.0.0",
+    "iniconfig>=2.3.0",
+    "numpy>=2.2.6",
+    "opencv-contrib-python>=4.12.0.88",
+    "packaging>=25.0",
+    "Panda3D>=1.10.15",
+    "pandas>=2.3.3",
+    "pillow>=12.3.0",
+    "pluggy>=1.6.0",
+    "Pygments>=2.19.2",
+    "pypylon>=4.2.0",
+    "PyQt6>=6.10.0",
+    "PyQt6-Qt6>=6.10.0",
+    "PyQt6_sip>=13.10.2",
+    "pyqtgraph>=0.14.0",
+    "pyserial>=3.5",
+    "PyAudio>=0.2.14",
+    "pytest>=9.0.1",
+    "python-dateutil>=2.9.0.post0",
+    "pytz>=2025.2",
+    "requests>=2.34.2",
+    "screeninfo>=0.8.1",
+    "six>=1.17.0",
+    "tzdata>=2025.2",
+]
+
+[project.scripts]
+fusi-db-app = "fusi_db_app:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
