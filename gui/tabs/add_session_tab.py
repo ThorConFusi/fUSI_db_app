@@ -1,8 +1,12 @@
+import sys
+
 import customtkinter as ctk
 from gui.base_tab import BaseTab
 import params
 from gui.dialogs import ExportPopup
 from params import session_name
+import subprocess
+from pathlib import Path
 
 
 class AddSessionTab(BaseTab):
@@ -178,6 +182,16 @@ class AddSessionTab(BaseTab):
         )
 
         self.show_success(f"Ready for session {next_num} of animal {pyrat_id}.")
+
+        # Run the stimulation GUI script
+        stim_app_dir = (Path.cwd() / "iEECR_fUSI_Stim").resolve()
+        path_to_script = stim_app_dir / "main_static.py"
+
+        subprocess.run(
+            [sys.executable, str(path_to_script)],
+        )
+
+
 
     # ---------------------------------------------------------
     # Submit session
